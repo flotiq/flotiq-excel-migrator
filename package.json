@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "node-fetch": "2",
+    "write-excel-file": "^1.4.13"
+  }
+}
