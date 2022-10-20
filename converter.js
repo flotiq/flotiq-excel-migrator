@@ -33,7 +33,6 @@ const ctdFieldTypes = (data) => {
     }
 
     for (field in data.metaDefinition.propertiesConfig) {
-        // console.log(data.metaDefinition.propertiesConfig[field].inputType); //DEL
         fieldTypes[field] = {
             propertyLabel: data.metaDefinition.propertiesConfig[field].label,
             field: objTypes[data.metaDefinition.propertiesConfig[field].inputType]
@@ -45,15 +44,18 @@ const ctdFieldTypes = (data) => {
 const coToRecord = (data, fieldTypes) => {
     let row = [];
     let coErrors = [];
-    // console.log(data);
 
     for (type in fieldTypes) {
-        // console.log(data[type], fieldTypes[type].field)
         let obj = formatContent(data[type], fieldTypes[type].field);
         if (obj.error) {
             coErrors.push({
                 propertyLabel: fieldTypes[type].propertyLabel,
                 message: obj.error
+            });
+        } else if ((!Array.isArray(data[type]) || !!data[type].length) && data[type] && !obj.element.value) {
+            coErrors.push({
+                propertyLabel: fieldTypes[type].propertyLabel,
+                message: `Data conversion failed`
             });
         }
         row.push(obj.element)

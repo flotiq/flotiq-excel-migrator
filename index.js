@@ -1,8 +1,9 @@
 const writeXlsxFile = require(`write-excel-file/node`);
+const fs = require('fs');
 const fetch = require("node-fetch");
 const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 
-migrateXlsx = async (apiKey, ctdName, limit = -1) => {
+migrateXlsx = async (directoryPath = "./", ctdName, apiKey, limit = -1) => {
     let data = [];
     let ctd = await fetchContentTypeDefinition(apiKey, ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
@@ -15,12 +16,18 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
     if (limit !== 0) {
         console.time("Data export time");
         let coExported = 0;
+        let coExportSuccess = 0;
         let co = await fetchContentObjects(apiKey, ctdName);
         let errors = [];
         let page = 1;
         let fieldTypes = ctdFieldTypes(ctd);
-        let coTotalCount = co.total_count;
 
+        if (co?.status < 200 || co?.status >= 300) {
+            console.log(`Fetching content objects failed:\n   Error ${co.status} : ${co.statusText}`);
+            return;
+        }
+        co = await co.json();
+        let coTotalCount = await co.total_count;
         let loading = (function() {
             let h = ['|', '/', '-', '\\'];
             let i = 0;
@@ -32,12 +39,6 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
                 i++;
             }, 300);
         })();
-
-        if (co?.status < 200 || co?.status >= 300) {
-            console.log(`Fetching content objects failed:\n   Error ${co.status} : ${co.statusText}`);
-            return;
-        }
-        co = await co.json();
         let totalPages = co.total_pages;
 
         while (page <= totalPages) {
@@ -46,6 +47,8 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
                 data.push(result.row);
                 if (result.coErrors.length !== 0) {
                     errors.push(result.coErrors);
+                } else {
+                    coExportSuccess++;
                 }
                 coExported++;
             }
@@ -65,11 +68,15 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
                 }
             }
         }
-        console.timeEnd("Data export time");
+        console.log(`Content objects successfully exported: ${coExportSuccess} out of ${coTotalCount}`)
+        console.timeEnd(`Data export time`);
+    }
+    if (!fs.existsSync(directoryPath)) {
+        fs.mkdirSync(directoryPath, {recursive: true});
     }
 
     await writeXlsxFile(data, {
-        filePath: `./${ctd.label}-template.xlsx`
+        filePath: `${directoryPath}/${ctd.label}.xlsx`
     });
     
     console.log(`Export to xls finished`)
@@ -91,7 +98,5 @@ const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
 
 module.exports = { migrateXlsx };
 
-migrateXlsx("76ae0cce0fd42f1cbf8ef36b126e6717", "allFields", -1);
-
 // testing
-// migrateXlsx("[apiKey]", "[ctd name]", [limit], /*limit - how many co to export -1 = all co*/);
+// migrateXlsx("[directory path]", "[ctd name]", "[apiKey]", [limit], /*limit - how many co to export -1 = all co*/);
