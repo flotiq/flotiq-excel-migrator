@@ -143,9 +143,9 @@ let validate = (data, type) => {
     switch (type) {
         case Date:
             if (
-                typeof data !== 'object' ||
-                data !== null ||
-                typeof data.getTime !== 'function' ||
+                typeof data !== `object` ||
+                data === null ||
+                typeof data.getTime !== `function` ||
                 isNaN(data)
             ) {
                 errorMessage = `Invalid date`;
@@ -153,12 +153,12 @@ let validate = (data, type) => {
             break;
         case String:
             if (data && data.length > maxStringLength) {
-                errorMessage = "Json object too long";
-                data = data.substring(0, 100) + "[...]";
+                errorMessage = `String too long (length reduced to ${maxStringLength})`;
+                data = data.substring(0, 100) + `[...]`;
             }
             break;
         default:
-            errorMessage = "Unknown field type";
+            errorMessage = `Unknown field type`;
     }
     if (errorMessage) {
         return `${errorMessage}\nData: ${data}`;

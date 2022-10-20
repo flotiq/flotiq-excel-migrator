@@ -4,33 +4,42 @@ const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 
 migrateXlsx = async (apiKey, ctdName, limit = -1) => {
     let data = [];
-
     let ctd = await fetchContentTypeDefinition(apiKey, ctdName);
-    
     if (ctd?.status < 200 || ctd?.status >= 300) {
         console.log(`Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`);
         return;
     }
-    
     ctd = await ctd.json();
-    
     data[0] = ctdToHeader(ctd);
     
     if (limit !== 0) {
+        console.time("Data export time");
+        let coExported = 0;
         let co = await fetchContentObjects(apiKey, ctdName);
+        let errors = [];
+        let page = 1;
+        let fieldTypes = ctdFieldTypes(ctd);
+        let coTotalCount = co.total_count;
+
+        let loading = (function() {
+            let h = ['|', '/', '-', '\\'];
+            let i = 0;
+    
+            return setInterval(() => {
+                i = (i > 3) ? 0 : i;
+                console.clear();
+                console.log(`Data export in progress... ${h[i]}\nExported objects: ${coExported} out of ${coTotalCount}`);
+                i++;
+            }, 300);
+        })();
 
         if (co?.status < 200 || co?.status >= 300) {
             console.log(`Fetching content objects failed:\n   Error ${co.status} : ${co.statusText}`);
             return;
         }
         co = await co.json();
-
-        let fieldTypes = ctdFieldTypes(ctd);
-
-        let errors = [];
         let totalPages = co.total_pages;
-        let coExported = 0;
-        let page = 1;
+
         while (page <= totalPages) {
             for (let i = 0; i < co.count && (limit === -1 || coExported < limit); i++) {
                 let result = (coToRecord(co.data[i], fieldTypes));
@@ -45,6 +54,8 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
                 co = await fetchContentObjects(apiKey, ctdName, page);
             }
         }
+        clearInterval(loading);
+
         if (errors.length !== 0) {
             console.log(`Export errors occured!\n`)
             for (let row in errors) {
@@ -54,11 +65,14 @@ migrateXlsx = async (apiKey, ctdName, limit = -1) => {
                 }
             }
         }
+        console.timeEnd("Data export time");
     }
 
     await writeXlsxFile(data, {
         filePath: `./${ctd.label}-template.xlsx`
     });
+    
+    console.log(`Export to xls finished`)
 }
 
 const fetchContentTypeDefinition = async (apiKey, ctdName) => {
