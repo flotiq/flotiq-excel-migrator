@@ -40,9 +40,15 @@ Form in which Flotiq data is exported to xlsx varies on property type:
 | Radio | Text |
 | Checkbox | TRUE / FALSE |
 | Select | Text |
-| Relation | API Url's in form of text, separated with commas, for example: `/api/v1/content/[ctdName]/[coName1],/api/v1/content/[ctdName]/[coName2]` |
+| Relation | API Url's in form of text, separated with commas*, for example: `/api/v1/content/[ctdName]/[coName1],/api/v1/content/[ctdName]/[coName2]` |
 | List | JSON |
 | Geo | JSON |
-| Media | API Url in form of text, for example: `/api/v1/content/_media/[mediaId1],/api/v1/content/_media/[mediaId2]` |
+| Media | API Url in form of text, separated with commas*, for example: `/api/v1/content/_media/[mediaId1],/api/v1/content/_media/[mediaId2]` |
 | Date time | Date |
 | Block | JSON |
+
+*separator can be changed by changing the const value in converter.js
+
+## Notes
+
+ - `Max string length` for all values is set to 30 000. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell
