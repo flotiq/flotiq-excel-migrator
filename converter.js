@@ -1,5 +1,5 @@
-const maxStringLength = 30000; //max string length allowed before throwing err (strings that are too long in single cell cause errors in ms excel)
-const referenceSep = ","; //used to seperate dataUrl for multiple references
+const MAX_STRING_LENGTH = 30000; //max string length allowed before throwing err (strings that are too long in single cell cause errors in ms excel)
+const REFERENCE_SEPARATOR = ","; //used to seperate dataUrl for multiple references
 
 const ctdToHeader = (data) => {
     let row = [];
@@ -79,7 +79,7 @@ const formatContent = (data, type) => {
         case String:
             error = validate(data, String);
             element = {
-                value: data.substring(0, maxStringLength),
+                value: data.substring(0, MAX_STRING_LENGTH),
                 type: String
             }
             break;
@@ -111,10 +111,9 @@ const formatContent = (data, type) => {
             }
             break;
         case "json":
-            data = JSON.stringify(data, null, 2);
-            error = validate(data, String);
+            error = validate(JSON.stringify(data, null, 2), String);
             element = {
-                value: data.substring(0, maxStringLength),
+                value: JSON.stringify(data, null, 2).substring(0, MAX_STRING_LENGTH),
                 type: String
             }
             break;
@@ -124,7 +123,7 @@ const formatContent = (data, type) => {
                 value.push(data[obj].dataUrl);
             }
             element = {
-                value: data = value.join(referenceSep),
+                value: data = value.join(REFERENCE_SEPARATOR),
                 type: String
             }
             break;
@@ -154,8 +153,8 @@ let validate = (data, type) => {
             }
             break;
         case String:
-            if (data && data.length > maxStringLength) {
-                errorMessage = `String too long (length reduced to ${maxStringLength})`;
+            if (data && data.length > MAX_STRING_LENGTH) {
+                errorMessage = `String too long (length reduced to ${MAX_STRING_LENGTH})`;
                 data = data.substring(0, 100) + `[...]`;
             }
             break;

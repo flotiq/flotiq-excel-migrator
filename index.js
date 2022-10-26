@@ -3,7 +3,7 @@ const fs = require('fs');
 const fetch = require("node-fetch");
 const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 
-migrateXlsx = async (directoryPath = "./", ctdName, apiKey, limit = -1) => {
+migrateXlsx = async (directoryPath, ctdName, apiKey, limit = -1) => {
     let data = [];
     let ctd = await fetchContentTypeDefinition(apiKey, ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
