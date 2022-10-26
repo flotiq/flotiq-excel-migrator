@@ -29,6 +29,9 @@ migrateXlsx = async (directoryPath, ctdName, apiKey, limit = -1) => {
         }
         co = await co.json();
         let coTotalCount = await co.total_count;
+        if (limit < coTotalCount && limit > 0) {
+            coTotalCount = limit;
+        }
         let loading = (function() {
             let h = ['|', '/', '-', '\\'];
             let i = 0;

@@ -20,6 +20,7 @@ const ctdFieldTypes = (data) => {
         "richtext": String,
         "textMarkdown": "json",
         "text": String,
+        "textarea": String,
         "number": Number,
         "dateTime": Date,
         "geo": "json",
