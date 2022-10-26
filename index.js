@@ -5,6 +5,7 @@ const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 
 migrateXlsx = async (directoryPath, ctdName, apiKey, limit = -1) => {
     let data = [];
+    directoryPath = __dirname + "\\" + directoryPath;
     let ctd = await fetchContentTypeDefinition(apiKey, ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
         console.log(`Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`);
