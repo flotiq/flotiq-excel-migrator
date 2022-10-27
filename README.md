@@ -10,20 +10,28 @@ Add this module to your project and import function migrateXlsx from index.js
 
 ## Usage
 
-Call function migrateXlsx with following parameters:
+Call function migrateXlsx with options object as attribute, for example:
+> let migrate_options = { 
+    apiKey: "[flotiq API Key]",
+    ctdName: "[CTD API Name]"
+ }
+ migrateXlsx(migrate_options)`
 
-`directoryPath` - directory path for exported xlsx file. Empty string `""` will result in file being saved inside your project directory.
+Function return following information:
+ - filePath
+ - number of Content Objects for export
+ - number of Content Objects successfully exported
+ - errors data
 
-`ctdName` - API name of Content Type Definition you wish to export.
+### Options parameters
 
-`apiKey` - API key to your Flotiq account.
-
-`limit` - (optional) number of Content Objects you wish to export"
- - 0 - only CTD propery names will be exported into column headers,
- - -1 - (default) all Content  Objects will be exported.
-
- Example:
- `migrateXlsx("project", "blogPost", "[apiKey]", 100)`
+Options objects accepts following parameters:
+ - apiKey - API key to your Flotiq account,
+ - ctdName - API name of Content Type Definition you wish to export,
+ - filePath (optional) - the directory to which the xlsx file is to be saved, current directory by default,
+ - limit (optional) - number of Content Objects you wish to export, exports all Content Objects by default,
+ - saveFile (optional) - boolean value determining whether to save the xlsx file in directory, true by default,
+ - logResults (optional) - boolean value determining whether to type out results into the console, true by default.
 
 ## Data mapping
 
