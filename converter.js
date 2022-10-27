@@ -2,7 +2,10 @@ const MAX_STRING_LENGTH = 30000; //max string length allowed before throwing err
 const REFERENCE_SEPARATOR = ","; //used to seperate dataUrl for multiple references
 
 const ctdToHeader = (data) => {
-    let row = [];
+    let row = [{
+        value: "id",
+        fontWeight: `bold`
+    }];
     for (field in data.schemaDefinition.allOf[1].properties) {
         let obj = {
             value: field,
@@ -43,7 +46,10 @@ const ctdFieldTypes = (data) => {
 }
 
 const coToRecord = (data, fieldTypes) => {
-    let row = [];
+    let row = [{
+        value: data.id,
+        type: String
+    }];
     let coErrors = [];
 
     for (type in fieldTypes) {
@@ -119,12 +125,8 @@ const formatContent = (data, type) => {
             }
             break;
         case "reference":
-            let value = [];
-            for (let obj in data) {
-                value.push(data[obj].dataUrl);
-            }
             element = {
-                value: data = value.join(REFERENCE_SEPARATOR),
+                value: data.map((obj) => (obj.dataUrl)).join(REFERENCE_SEPARATOR),
                 type: String
             }
             break;
@@ -166,4 +168,5 @@ let validate = (data, type) => {
         return `${errorMessage}\nData: ${data}`;
     } return null;
 }
+
 module.exports = { ctdToHeader, ctdFieldTypes, coToRecord };
