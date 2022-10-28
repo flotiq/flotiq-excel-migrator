@@ -3,7 +3,7 @@ const fs = require('fs');
 const fetch = require("node-fetch");
 const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 
-migrateXlsx = async (options) => {
+exportXlsx = async (options) => {
     options = await validateOptions(options);
     let data = [];
     let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
@@ -144,4 +144,4 @@ const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
     );
 }
 
-module.exports = { migrateXlsx };
+module.exports = { exportXlsx };
