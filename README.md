@@ -11,11 +11,13 @@ Add this module to your project and import function migrateXlsx from index.js
 ## Usage
 
 Call function migrateXlsx with options object as attribute, for example:
-> let migrate_options = { 
-    apiKey: "[flotiq API Key]",
-    ctdName: "[CTD API Name]"
- }
-> migrateXlsx(migrate_options)`
+```
+let migrate_options = { 
+  apiKey: "[flotiq API Key]",
+  ctdName: "[CTD API Name]"
+}
+migrateXlsx(migrate_options)
+```
 
 Function return following information:
 * filePath
