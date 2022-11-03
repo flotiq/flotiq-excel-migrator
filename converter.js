@@ -77,7 +77,7 @@ const recordToCo = (data, fieldTypes) => {
     let co = {};
     for (let property in data) {
         if (property === "id") {
-            co.id = data.id;
+            co[property] = data[property];
             continue;
         }
         switch (fieldTypes[property].field) {

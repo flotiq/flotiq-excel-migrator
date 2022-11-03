@@ -8,7 +8,7 @@ const SYS_LIMIT = 10000;
 
 importXlsx = async (options) => {
     options = await validateImportOptions(options);
-    
+    console.time("Data import time");
     let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
         console.log(`Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`);
@@ -25,30 +25,32 @@ importXlsx = async (options) => {
     let fieldTypes = ctdFieldTypes(ctd);
 
     let coTotalCount = 0;
+    let coSuccessCount = 0;
     for (let sheet in xlsxWorkbook) {
         coTotalCount += xlsxWorkbook[sheet].length - 1;   
     }
-    let coImportedCount = 0;
-    let coErrorsCount = 0;
-    let coErrors = [];
-
-    if (options.logResults === true) {
-        let loading = (function() {
-            let h = ['|', '/', '-', '\\'];
-            let i = 0;
+    
+    let loading = (function() {
+        if (options.logResults) {
+        let h = ['|', '/', '-', '\\'];
+        let i = 0;
         
             return setInterval(() => {
                 i = (i > 3) ? 0 : i;
                 console.clear();
-                console.log(`Data export in progress... ${h[i]}\nExported objects: ${coImportedCount} out of ${coTotalCount}`);
+                console.log(`Data import in progress... ${h[i]}\nExported objects: ${coSuccessCount} out of ${coTotalCount + 1}`);
                 i++;
             }, 300);
-        })();
-        clearInterval(loading);
-    }
+        }
+    })();
     
     let importResult = {};
     for (let sheet in xlsxWorkbook) {
+        importResult[sheet] = {
+            sheetImportedCoCount: 0,
+            sheetErrorsCount: 0,
+            sheetErrors: []
+        }
         xlsxWorkbook[sheet].shift();
         let coArray = [];
         if (options.limit === -1) {
@@ -57,20 +59,29 @@ importXlsx = async (options) => {
         for (let row = 0; row <= xlsxWorkbook[sheet].length && row <= options.limit; row++) {
             coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
         }
-        let batchResponse = await batchContentObjects(coArray, options.apiKey, options.ctdName, options.updateExisting);
-        for (let batch in batchResponse) {
-            let batchResponseJson = await batchResponse[batch].json();
-            coImportedCount += batchResponseJson.batch_success_count;
-            coErrorsCount += batchResponseJson.batch_error_count;
-            coErrors = coErrors.concat(batchResponseJson.errors);
-        }
-        importResult[sheet] = {
-            coImportedCount: coImportedCount,
-            coErrorsCount: coErrorsCount,
-            coErrors: coErrors
+        
+        const limit = 100;
+        for (let j = 0; j < coArray.length; j += limit) {
+            let page = coArray.slice(j, j + limit);
+            let batchResponse = await batchContentObjects(page, options.apiKey, options.ctdName, options.updateExisting);
+            if (batchResponse?.status < 200 || batchResponse?.status >= 300) {
+                importResult[sheet].sheetErrorsCount += page.length - 1;
+            } else {
+                let batchResponseJson = await batchResponse.json();
+                importResult[sheet].sheetImportedCoCount += batchResponseJson.batch_success_count;
+                importResult[sheet].sheetErrorsCount += batchResponseJson.batch_error_count;
+                importResult[sheet].sheetErrors = importResult[sheet].sheetErrors.concat(batchResponseJson.errors);
+                coSuccessCount += batchResponseJson.batch_success_count;
+            }
         }
     }
     console.log(`Import from xlsx finished`);
+    clearInterval(loading);
+    if (options.logResults) {
+        console.clear();
+        console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount + 1}`)
+        console.timeEnd(`Data import time`);
+    }
     return importResult;
 }
 
@@ -250,18 +261,12 @@ const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
 }
 
 const batchContentObjects = async (contentObjects, apiKey, ctdName, updateExisting) => {
-    let result = [];
-    const limit = 100;
-    for (let j = 0; j < contentObjects.length; j += limit) {
-        let page = contentObjects.slice(j, j + limit);
-        result[ctdName] = await fetch(
+        return await fetch(
             `https://api.flotiq.com/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
                 method: 'post',
-                body: JSON.stringify(page),
+                body: JSON.stringify(contentObjects),
                 headers: {'Content-Type': 'application/json'}
         });
-    }
-    return result;
 }
 
 module.exports = { exportXlsx, importXlsx };
