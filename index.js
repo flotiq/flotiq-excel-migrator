@@ -64,13 +64,13 @@ importXlsx = async (options) => {
         for (let j = 0; j < coArray.length; j += limit) {
             let page = coArray.slice(j, j + limit);
             let batchResponse = await batchContentObjects(page, options.apiKey, options.ctdName, options.updateExisting);
+            let batchResponseJson = await batchResponse.json();
+            importResult[sheet].sheetErrors = importResult[sheet].sheetErrors.concat(batchResponseJson.errors);
             if (batchResponse?.status < 200 || batchResponse?.status >= 300) {
-                importResult[sheet].sheetErrorsCount += page.length - 1;
+                importResult[sheet].sheetErrorsCount += page.length;
             } else {
-                let batchResponseJson = await batchResponse.json();
                 importResult[sheet].sheetImportedCoCount += batchResponseJson.batch_success_count;
                 importResult[sheet].sheetErrorsCount += batchResponseJson.batch_error_count;
-                importResult[sheet].sheetErrors = importResult[sheet].sheetErrors.concat(batchResponseJson.errors);
                 coSuccessCount += batchResponseJson.batch_success_count;
             }
         }
