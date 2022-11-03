@@ -4,6 +4,7 @@ const fs = require(`fs`);
 const fetch = require(`node-fetch`);
 const path = require(`path`)
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
+const SYS_LIMIT = 10000;
 
 importXlsx = async (options) => {
     options = await validateImportOptions(options);
@@ -29,24 +30,9 @@ importXlsx = async (options) => {
         for (let row in xlsxWorkbook[sheet]) {
             coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
         }
-        let response = await flotiqCoBatch(coArray, options.apiKey, options.ctdName, options.updateExisting);
-        console.log(response);
+        let result = await batchContentObjects(coArray, options.apiKey, options.ctdName, options.updateExisting);
+        return result;
     }
-}
-
-const flotiqCoBatch = async (contentObjects, apiKey, ctdName, updateExisting) => {
-    let result = [];
-    const limit = 100;
-    for (let j = 0; j < contentObjects.length; j += limit) {
-        let page = contentObjects.slice(j, j + limit);
-        result[ctdName] = await fetch(
-            `https://api.flotiq.com/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
-                method: 'post',
-                body: JSON.stringify(page),
-                headers: {'Content-Type': 'application/json'}
-        });
-    }
-    return result;
 }
 
 const validateImportOptions = async (options) => {
@@ -88,6 +74,9 @@ exportXlsx = async (options) => {
     }
 
     if (options.limit !== 0) {
+        if (options.limit === -1) {
+            options.limit = SYS_LIMIT;
+        }
         console.time("Data export time");
         let coExported = 0;
         let coExportSuccess = 0;
@@ -108,7 +97,7 @@ exportXlsx = async (options) => {
         let totalPages = co.total_pages;
 
         while (page <= totalPages) {
-            for (let i = 0; i < co.count && (options.limit === -1 || coExported < options.limit); i++) {
+            for (let i = 0; i < co.count && coExported < options.limit; i++) {
                 let result = (coToRecord(co.data[i], fieldTypes));
                 data.push(result.row);
                 if (result.coErrors.length !== 0) {
@@ -132,7 +121,7 @@ exportXlsx = async (options) => {
             let loading = (function() {
                 let h = ['|', '/', '-', '\\'];
                 let i = 0;
-        
+            
                 return setInterval(() => {
                     i = (i > 3) ? 0 : i;
                     console.clear();
@@ -188,11 +177,14 @@ const validateExportOptions = async (options) => {
     //default values
     if (!options.hasOwnProperty("limit")) {
         options.limit = -1;
-    } else if (!options.filePath) {
+    }
+    if (!options.filePath) {
         options.filePath = "";
-    } else if (!options.saveFile) {
+    }
+    if (!options.saveFile) {
         options.saveFile = true;
-    } else if (!options.logResults) {
+    }
+    if (!options.logResults) {
         options.logResults = true;
     }
     return options;
@@ -210,6 +202,21 @@ const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
         `https://api.flotiq.com/api/v1/content/${ctdName}?page=${page}&limit=${limit}&order_by=internal.createdAt&order_direction=asc&auth_token=${apiKey}`,
         { method: 'GET' }
     );
+}
+
+const batchContentObjects = async (contentObjects, apiKey, ctdName, updateExisting) => {
+    let result = [];
+    const limit = 100;
+    for (let j = 0; j < contentObjects.length; j += limit) {
+        let page = contentObjects.slice(j, j + limit);
+        result[ctdName] = await fetch(
+            `https://api.flotiq.com/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
+                method: 'post',
+                body: JSON.stringify(page),
+                headers: {'Content-Type': 'application/json'}
+        });
+    }
+    return result;
 }
 
 module.exports = { exportXlsx, importXlsx };

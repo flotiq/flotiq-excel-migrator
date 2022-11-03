@@ -88,7 +88,7 @@ const recordToCo = (data, fieldTypes) => {
                 co[property] = Number(data[property]);
                 break;
             case Date:
-                co[property] = data[property]; //(todo) check
+                co[property] = data[property];
                 break;
             case Boolean:
                 if (data[property] === "TRUE") {
@@ -101,7 +101,7 @@ const recordToCo = (data, fieldTypes) => {
                 co[property] = JSON.parse(data[property]);
                 break;
             case "reference":
-                let references = data[property].split(',');
+                let references = data[property].split(REFERENCE_SEPARATOR);
                 co[property] = [];
                 for (let ref in references) {
                     co[property].push({
@@ -110,8 +110,6 @@ const recordToCo = (data, fieldTypes) => {
                     })
                 }
                 break;
-            default:
-                errorMessage = `Unknown field type`;
         }
     }
     return co;
