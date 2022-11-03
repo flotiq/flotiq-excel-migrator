@@ -1,10 +1,78 @@
 const writeXlsxFile = require(`write-excel-file/node`);
-const fs = require('fs');
-const fetch = require("node-fetch");
-const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
+const readXlsxFile = require('convert-excel-to-json');
+const fs = require(`fs`);
+const fetch = require(`node-fetch`);
+const path = require(`path`)
+const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
+
+importXlsx = async (options) => {
+    options = await validateImportOptions(options);
+    
+    let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
+    if (ctd?.status < 200 || ctd?.status >= 300) {
+        console.log(`Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`);
+        return;
+    }
+    ctd = await ctd.json();
+
+    let xlsxWorkbook = readXlsxFile({
+        sourceFile: options.filePath,
+        columnToKey: {
+            '*': '{{columnHeader}}'
+        }
+    })
+    let fieldTypes = ctdFieldTypes(ctd);
+
+    for (let sheet in xlsxWorkbook) {
+        xlsxWorkbook[sheet].shift();
+        let coArray = [];
+        for (let row in xlsxWorkbook[sheet]) {
+            coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
+        }
+        let response = await flotiqCoBatch(coArray, options.apiKey, options.ctdName, options.updateExisting);
+        console.log(response);
+    }
+}
+
+const flotiqCoBatch = async (contentObjects, apiKey, ctdName, updateExisting) => {
+    let result = [];
+    const limit = 100;
+    for (let j = 0; j < contentObjects.length; j += limit) {
+        let page = contentObjects.slice(j, j + limit);
+        result[ctdName] = await fetch(
+            `https://api.flotiq.com/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
+                method: 'post',
+                body: JSON.stringify(page),
+                headers: {'Content-Type': 'application/json'}
+        });
+    }
+    return result;
+}
+
+const validateImportOptions = async (options) => {
+    let allowedExtensions = ["xlsx", "xlsm"]; //other extensions like xls, xml require testing
+    if (typeof options !== 'object' || !Object.keys(options).length) {
+        throw "Missing or invalid argument for export options";
+    } else if (!options.ctdName || typeof options.filePath !== "string") {
+        throw "Property ctdName hasn't been properly declared";
+    } else if (!options.filePath || typeof options.filePath !== "string") {
+        throw "Property filePath hasn't been properly declared";
+    } else if (!fs.existsSync(options.filePath)) {
+        throw "No such file in specified filePath";
+    } else if (allowedExtensions.includes(path.parse(options.filePath).ext)) {
+        throw "File specified in filePath has wrong extension";
+    } else if (!options.apiKey || typeof options.apiKey !== "string") {
+        throw "Property apiKey hasn't been properly declared";
+    }
+    //default values
+    if (!options.updateExisting) {
+        options.updateExisting = false;
+    }
+    return options;
+}
 
 exportXlsx = async (options) => {
-    options = await validateOptions(options);
+    options = await validateExportOptions(options);
     let data = [];
     let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
@@ -101,13 +169,13 @@ exportXlsx = async (options) => {
     return response;
 }
 
-const validateOptions = async (options) => {
+const validateExportOptions = async (options) => {
     if (typeof options !== 'object' || !Object.keys(options).length) {
         throw "Missing or invalid argument for export options";
     } else if (!options.ctdName || typeof options.ctdName !== "string") {
-        throw "API Name of Content Type Definition hasn't been properly declared";
+        throw "Property ctdName hasn't been properly declared";
     } else if (!options.apiKey || typeof options.apiKey !== "string") {
-        throw "API Key hasn't been properly declared";
+        throw "Property apiKey hasn't been properly declared";
     } else if (options.filePath && typeof options.filePath !== "string") {
         throw "Property filePath must be a string";
     } else if (options.limit && typeof options.limit !== "number") {
@@ -144,4 +212,4 @@ const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
     );
 }
 
-module.exports = { exportXlsx };
+module.exports = { exportXlsx, importXlsx };

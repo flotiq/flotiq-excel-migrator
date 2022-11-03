@@ -73,6 +73,50 @@ const coToRecord = (data, fieldTypes) => {
     }
 }
 
+const recordToCo = (data, fieldTypes) => {
+    let co = {};
+    for (let property in data) {
+        if (property === "id") {
+            co.id = data.id;
+            continue;
+        }
+        switch (fieldTypes[property].field) {
+            case String:
+                co[property] = data[property];
+                break;
+            case Number:
+                co[property] = Number(data[property]);
+                break;
+            case Date:
+                co[property] = data[property]; //(todo) check
+                break;
+            case Boolean:
+                if (data[property] === "TRUE") {
+                    co[property] = true;
+                } else if (data[property] === "FALSE") {
+                    co[property] = false;
+                }
+                break;
+            case "json":
+                co[property] = JSON.parse(data[property]);
+                break;
+            case "reference":
+                let references = data[property].split(',');
+                co[property] = [];
+                for (let ref in references) {
+                    co[property].push({
+                        type: "internal",
+                        dataUrl: references[ref]
+                    })
+                }
+                break;
+            default:
+                errorMessage = `Unknown field type`;
+        }
+    }
+    return co;
+}
+
 const formatContent = (data, type) => {
     let element;
     let error = null;
@@ -118,9 +162,9 @@ const formatContent = (data, type) => {
             }
             break;
         case "json":
-            error = validate(JSON.stringify(data, null, 2), String);
+            error = validate(JSON.stringify(data), String);
             element = {
-                value: JSON.stringify(data, null, 2).substring(0, MAX_STRING_LENGTH),
+                value: JSON.stringify(data).substring(0, MAX_STRING_LENGTH),
                 type: String
             }
             break;
@@ -169,4 +213,4 @@ let validate = (data, type) => {
     } return null;
 }
 
-module.exports = { ctdToHeader, ctdFieldTypes, coToRecord };
+module.exports = { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo };
