@@ -24,15 +24,54 @@ importXlsx = async (options) => {
     })
     let fieldTypes = ctdFieldTypes(ctd);
 
+    let coTotalCount = 0;
+    for (let sheet in xlsxWorkbook) {
+        coTotalCount += xlsxWorkbook[sheet].length - 1;   
+    }
+    let coImportedCount = 0;
+    let coErrorsCount = 0;
+    let coErrors = [];
+
+    if (options.logResults === true) {
+        let loading = (function() {
+            let h = ['|', '/', '-', '\\'];
+            let i = 0;
+        
+            return setInterval(() => {
+                i = (i > 3) ? 0 : i;
+                console.clear();
+                console.log(`Data export in progress... ${h[i]}\nExported objects: ${coImportedCount} out of ${coTotalCount}`);
+                i++;
+            }, 300);
+        })();
+        clearInterval(loading);
+    }
+    
+    let importResult = {};
     for (let sheet in xlsxWorkbook) {
         xlsxWorkbook[sheet].shift();
         let coArray = [];
-        for (let row in xlsxWorkbook[sheet]) {
+        if (options.limit === -1) {
+            options.limit = SYS_LIMIT;
+        }
+        for (let row = 0; row <= xlsxWorkbook[sheet].length && row <= options.limit; row++) {
             coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
         }
-        let result = await batchContentObjects(coArray, options.apiKey, options.ctdName, options.updateExisting);
-        return result;
+        let batchResponse = await batchContentObjects(coArray, options.apiKey, options.ctdName, options.updateExisting);
+        for (let batch in batchResponse) {
+            let batchResponseJson = await batchResponse[batch].json();
+            coImportedCount += batchResponseJson.batch_success_count;
+            coErrorsCount += batchResponseJson.batch_error_count;
+            coErrors = coErrors.concat(batchResponseJson.errors);
+        }
+        importResult[sheet] = {
+            coImportedCount: coImportedCount,
+            coErrorsCount: coErrorsCount,
+            coErrors: coErrors
+        }
     }
+    console.log(`Import from xlsx finished`);
+    return importResult;
 }
 
 const validateImportOptions = async (options) => {
@@ -53,6 +92,12 @@ const validateImportOptions = async (options) => {
     //default values
     if (!options.updateExisting) {
         options.updateExisting = false;
+    }
+    if (!options.logResults) {
+        options.logResults = false;
+    }
+    if (!options.limit) {
+        options.limit = -1;
     }
     return options;
 }
@@ -185,7 +230,7 @@ const validateExportOptions = async (options) => {
         options.saveFile = true;
     }
     if (!options.logResults) {
-        options.logResults = true;
+        options.logResults = false;
     }
     return options;
 }
