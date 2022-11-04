@@ -70,7 +70,7 @@ Options objects accepts following parameters:
 * filePath - the directory to xlsx file you wish to import data from,
 * limit (optional) - number of Content Objects you wish to import, imports up to 10 000 Content Objects by default,
 * logResults (optional) - boolean value determining whether to type out results into the console, false by default.
-* updateExisting (optional) boolean value determining whether to update existing Content Objetcs.
+* updateExisting (optional) boolean value determining whether to update existing Content Objetcs, true by default.
 
 ### Notes
 

@@ -3,11 +3,52 @@ const readXlsxFile = require('convert-excel-to-json');
 const fs = require(`fs`);
 const fetch = require(`node-fetch`);
 const path = require(`path`);
+const yup = require(`yup`);
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
 const SYS_LIMIT = 10000;
 
 importXlsx = async (options) => {
-    options = await validateImportOptions(options);
+    let importOptionsSchema = yup.object().shape({
+        ctdName: yup.string().required(),
+        apiKey: yup.string().required(),
+        filePath: yup.string().required(),
+        limit: yup.number().integer().default(-1),
+        updateExisting: yup.boolean().default(true),
+        logResults: yup.boolean().default(false)
+    });
+    const logResults = options.logResults;
+
+    options = await importOptionsSchema.validate(options)
+        .then((v) => {
+            let allowedExtensions = [".xlsx", ".xlsm"]; //other extensions if ever needed go here
+            if (!fs.existsSync(options.filePath)) {
+                return {
+                    param: `filePath`,
+                    errors: `no such file in directory specified in filePath`
+                }
+            } else if (!allowedExtensions.includes(path.parse(options.filePath).ext)) {
+                return {
+                    param: `filePath`,
+                    errors: `wrong file extension, allowed extensions are: ${allowedExtensions}`
+                }
+            } else {
+                return v;
+            }
+        })
+        .catch((e) => {
+            return {
+                param: e.params.path,
+                errors: e.errors
+            }
+        })
+
+    if (options.errors) {
+        if (logResults) {
+            console.log("Errors have occured:\n", options)
+        }
+        return options;
+    }
+
     console.time("Data import time");
     let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
@@ -31,14 +72,14 @@ importXlsx = async (options) => {
     }
     
     let loading = (function() {
-        if (options.logResults) {
+        if (logResults) {
         let h = ['|', '/', '-', '\\'];
         let i = 0;
         
             return setInterval(() => {
                 i = (i > 3) ? 0 : i;
                 console.clear();
-                console.log(`Data import in progress... ${h[i]}\nExported objects: ${coSuccessCount} out of ${coTotalCount + 1}`);
+                console.log(`Data import in progress... ${h[i]}\nExported objects: ${coSuccessCount} out of ${coTotalCount}`);
                 i++;
             }, 300);
         }
@@ -59,6 +100,7 @@ importXlsx = async (options) => {
         for (let row = 0; row <= xlsxWorkbook[sheet].length && row <= options.limit; row++) {
             coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
         }
+        coArray.pop();
         
         const limit = 100;
         for (let j = 0; j < coArray.length; j += limit) {
@@ -77,40 +119,12 @@ importXlsx = async (options) => {
     }
     console.log(`Import from xlsx finished`);
     clearInterval(loading);
-    if (options.logResults) {
+    if (logResults) {
         console.clear();
-        console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount + 1}`)
+        console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount}`)
         console.timeEnd(`Data import time`);
     }
     return importResult;
-}
-
-const validateImportOptions = async (options) => {
-    let allowedExtensions = ["xlsx", "xlsm"]; //other extensions like xls, xml require testing
-    if (typeof options !== 'object' || !Object.keys(options).length) {
-        throw "Missing or invalid argument for export options";
-    } else if (!options.ctdName || typeof options.ctdName !== "string") {
-        throw "Property ctdName hasn't been properly declared";
-    } else if (!options.filePath || typeof options.filePath !== "string") {
-        throw "Property filePath hasn't been properly declared";
-    } else if (!fs.existsSync(options.filePath)) {
-        throw "No such file in specified filePath";
-    } else if (allowedExtensions.includes(path.parse(options.filePath).ext)) {
-        throw "File specified in filePath has wrong extension";
-    } else if (!options.apiKey || typeof options.apiKey !== "string") {
-        throw "Property apiKey hasn't been properly declared";
-    }
-    //default values
-    if (!options.updateExisting) {
-        options.updateExisting = false;
-    }
-    if (!options.logResults) {
-        options.logResults = false;
-    }
-    if (!options.limit) {
-        options.limit = -1;
-    }
-    return options;
 }
 
 exportXlsx = async (options) => {
