@@ -2,7 +2,7 @@ const writeXlsxFile = require(`write-excel-file/node`);
 const readXlsxFile = require('convert-excel-to-json');
 const fs = require(`fs`);
 const fetch = require(`node-fetch`);
-const path = require(`path`)
+const path = require(`path`);
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
 const SYS_LIMIT = 10000;
 
@@ -89,7 +89,7 @@ const validateImportOptions = async (options) => {
     let allowedExtensions = ["xlsx", "xlsm"]; //other extensions like xls, xml require testing
     if (typeof options !== 'object' || !Object.keys(options).length) {
         throw "Missing or invalid argument for export options";
-    } else if (!options.ctdName || typeof options.filePath !== "string") {
+    } else if (!options.ctdName || typeof options.ctdName !== "string") {
         throw "Property ctdName hasn't been properly declared";
     } else if (!options.filePath || typeof options.filePath !== "string") {
         throw "Property filePath hasn't been properly declared";
