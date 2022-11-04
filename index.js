@@ -70,6 +70,12 @@ importXlsx = async (options) => {
     for (let sheet in xlsxWorkbook) {
         coTotalCount += xlsxWorkbook[sheet].length - 1;   
     }
+    if (options.limit === -1) {
+        options.limit = SYS_LIMIT;
+    }
+    if (coTotalCount > options.limit) {
+        coTotalCount = options.limit;
+    }
     
     let loading = (function() {
         if (logResults) {
@@ -94,9 +100,6 @@ importXlsx = async (options) => {
         }
         xlsxWorkbook[sheet].shift();
         let coArray = [];
-        if (options.limit === -1) {
-            options.limit = SYS_LIMIT;
-        }
         for (let row = 0; row <= xlsxWorkbook[sheet].length && row <= options.limit; row++) {
             coArray[row] = recordToCo(xlsxWorkbook[sheet][row], fieldTypes);
         }
