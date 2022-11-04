@@ -11,11 +11,13 @@ Add this module to your project and import function migrateXlsx from index.js
 ## Usage
 
 Call function migrateXlsx with options object as attribute, for example:
-> let migrate_options = { 
-    apiKey: "[flotiq API Key]",
-    ctdName: "[CTD API Name]"
- }
- migrateXlsx(migrate_options)`
+```
+let migrate_options = { 
+  apiKey: "[flotiq API Key]",
+  ctdName: "[CTD API Name]"
+}
+migrateXlsx(migrate_options)
+```
 
 Function return following information:
 * filePath
@@ -59,4 +61,4 @@ Form in which Flotiq data is exported to xlsx varies on property type:
 
 ## Notes
 
- - `Max string length` for all values is set to 30 000. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell
+ - `Max string length` is set to 30 000 for all values. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell
