@@ -6,7 +6,7 @@ const { ctdToHeader, ctdFieldTypes, coToRecord } = require('./converter');
 const SYS_LIMIT = 10000;
 
 exportXlsx = async (options) => {
-    let importOptionsSchema = yup.object().shape({
+    const importOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
         filePath: yup.string().required(),
