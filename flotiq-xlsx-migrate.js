@@ -6,7 +6,7 @@ const path = require(`path`);
 const yup = require(`yup`);
 const config = require("./config");
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
-const SYS_LIMIT = 10000;
+const SHEET_CO_NUMBER_LIMIT = 10000;
 
 importXlsx = async (options) => {
     let importOptionsSchema = yup.object().shape({
@@ -72,7 +72,7 @@ importXlsx = async (options) => {
         coTotalCount += xlsxWorkbook[sheet].length - 1;   
     }
     if (options.limit === -1) {
-        options.limit = SYS_LIMIT;
+        options.limit = SHEET_CO_NUMBER_LIMIT;
     }
     if (coTotalCount > options.limit) {
         coTotalCount = options.limit;
@@ -178,7 +178,7 @@ exportXlsx = async (options) => {
 
     if (options.limit !== 0) {
         if (options.limit === -1) {
-            options.limit = SYS_LIMIT;
+            options.limit = SHEET_CO_NUMBER_LIMIT;
         }
         console.time("Data export time");
         let coExported = 0;
