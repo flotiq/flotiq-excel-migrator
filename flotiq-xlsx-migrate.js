@@ -131,7 +131,34 @@ importXlsx = async (options) => {
 }
 
 exportXlsx = async (options) => {
-    options = await validateExportOptions(options);
+    const importOptionsSchema = yup.object().shape({
+        ctdName: yup.string().required(),
+        apiKey: yup.string().required(),
+        filePath: yup.string().required(),
+        limit: yup.number().integer().default(-1),
+        saveFile: yup.boolean().default(true),
+        logResults: yup.boolean().default(false)
+    });
+    const logResults = options.logResults;
+
+    options = await importOptionsSchema.validate(options)
+        .then((v) => {
+            return v;
+        })
+        .catch((e) => {
+            return {
+                param: e.params.path,
+                errors: e.errors
+            }
+        })
+
+    if (options.errors) {
+        if (logResults) {
+            console.log("Errors have occured:\n", options)
+        }
+        return options;
+    }
+
     let data = [];
     let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
     if (ctd?.status < 200 || ctd?.status >= 300) {
@@ -143,7 +170,9 @@ exportXlsx = async (options) => {
     let dirPath = `${ __dirname }/${ options.filePath }/${ ctd.label }.xlsx`;
     let response = {
         directoryPath: dirPath,
-        errors: null
+        errors: null,
+        coTotal: 0,
+        co_success: 0
     }
 
     if (options.limit !== 0) {
@@ -152,7 +181,6 @@ exportXlsx = async (options) => {
         }
         console.time("Data export time");
         let coExported = 0;
-        let coExportSuccess = 0;
         let co = await fetchContentObjects(options.apiKey, options.ctdName);
         let errors = [];
         let page = 1;
@@ -163,30 +191,26 @@ exportXlsx = async (options) => {
             return;
         }
         co = await co.json();
-        let coTotalCount = await co.total_count;
-        if (options.limit < coTotalCount && options.limit > 0) {
-            coTotalCount = options.limit;
+        response.coTotal = await co.total_count;
+        if (options.limit < response.coTotal && options.limit > 0) {
+            response.coTotal = options.limit;
         }
-        let totalPages = co.total_pages;
-
-        while (page <= totalPages) {
+        while (page <= co.total_pages) {
             for (let i = 0; i < co.count && coExported < options.limit; i++) {
                 let result = (coToRecord(co.data[i], fieldTypes));
                 data.push(result.row);
                 if (result.coErrors.length !== 0) {
                     errors.push(result.coErrors);
                 } else {
-                    coExportSuccess++;
+                    response.co_success++;
                 }
                 coExported++;
             }
             page++;
-            if (page <= totalPages && coExported <= options.limit) {
-                co = await fetchContentObjects(options.apiKey, options.ctdName, page);
+            if (page <= co.total_pages && coExported <= options.limit) {
+                co = await (await fetchContentObjects(options.apiKey, options.ctdName, page)).json();
             }
         }
-        response.coTotal = coTotalCount;
-        response.co_success = coExportSuccess;
         if (errors.length !== 0) {
             response.errors = errors;
         }
@@ -198,7 +222,7 @@ exportXlsx = async (options) => {
                 return setInterval(() => {
                     i = (i > 3) ? 0 : i;
                     console.clear();
-                    console.log(`Data export in progress... ${h[i]}\nExported objects: ${coExported} out of ${coTotalCount}`);
+                    console.log(`Data export in progress... ${h[i]}\nExported objects: ${coExported} out of ${response.coTotal}`);
                     i++;
                 }, 300);
             })();
@@ -212,7 +236,7 @@ exportXlsx = async (options) => {
                     }
                 }
             }
-            console.log(`Content objects successfully exported: ${coExportSuccess} out of ${coTotalCount}`)
+            console.log(`Content objects successfully exported: ${response.co_success} out of ${response.coTotal}`)
             console.timeEnd(`Data export time`);
         }
     }
@@ -229,38 +253,6 @@ exportXlsx = async (options) => {
     console.log(`Export to xlsx finished`);
 
     return response;
-}
-
-const validateExportOptions = async (options) => {
-    if (typeof options !== 'object' || !Object.keys(options).length) {
-        throw "Missing or invalid argument for export options";
-    } else if (!options.ctdName || typeof options.ctdName !== "string") {
-        throw "Property ctdName hasn't been properly declared";
-    } else if (!options.apiKey || typeof options.apiKey !== "string") {
-        throw "Property apiKey hasn't been properly declared";
-    } else if (options.filePath && typeof options.filePath !== "string") {
-        throw "Property filePath must be a string";
-    } else if (options.limit && typeof options.limit !== "number") {
-        throw "Property limit must be a number";
-    } else if (options.saveFile && typeof options.saveFile !== "boolean") {
-        throw "Property saveFile must be a boolean";
-    } else if (options.logResults && typeof options.logResults !== "boolean") {
-        throw "Property logResults must be a string";
-    }
-    //default values
-    if (!options.hasOwnProperty("limit")) {
-        options.limit = -1;
-    }
-    if (!options.filePath) {
-        options.filePath = "";
-    }
-    if (!options.saveFile) {
-        options.saveFile = true;
-    }
-    if (!options.logResults) {
-        options.logResults = false;
-    }
-    return options;
 }
 
 const fetchContentTypeDefinition = async (apiKey, ctdName) => {
