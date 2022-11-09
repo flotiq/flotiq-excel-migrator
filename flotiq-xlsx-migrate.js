@@ -43,19 +43,22 @@ importXlsx = async (options) => {
             }
         })
 
+    console.time("Data import time");
+    let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
+    if (ctd?.status < 200 || ctd?.status >= 300) {
+        options = {
+            param: null,
+            errors: `fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+        };
+    }
+
     if (options.errors) {
         if (logResults) {
-            console.log("Errors have occured:\n", options)
+            console.log("Errors have occured:\n", options);
         }
         return options;
     }
 
-    console.time("Data import time");
-    let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
-    if (ctd?.status < 200 || ctd?.status >= 300) {
-        console.log(`Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`);
-        return;
-    }
     ctd = await ctd.json();
 
     let xlsxWorkbook = readXlsxFile({
