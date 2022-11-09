@@ -61,7 +61,7 @@ export_to_excel();
 
 ```
 {
-  directoryPath: '`_dirname`//testxlsx.xlsx',
+  directoryPath: '[_dirname]//testxlsx.xlsx',
   errors: null,
   coTotal: 3,
   co_success: 3
