@@ -6,7 +6,7 @@ Module for migrating Flotiq data to and from xlsx file.
 
 Run `npm install`
 
-Add this module to your project and import functions from index.js
+Add this module to your project and import functions from flotiq-xlsx-migrate.js
 
 ## Export
 
@@ -15,11 +15,11 @@ Add this module to your project and import functions from index.js
 ### Usage
 
 Call function exportXlsx with options object as attribute, for example:
-> let export_options = { 
->   apiKey: "[Flotiq API Key]",
->   ctdName: "[CTD API Name]"
-> }
-> exportXlsx(export_options)`
+let export_options = { 
+    apiKey: "[Flotiq API Key]",
+    ctdName: "[CTD API Name]"
+}
+exportXlsx(export_options)`
 
 Function returns following information:
 * filePath
@@ -39,8 +39,34 @@ Options objects accepts following parameters:
 
 ### Notes
 
- - Exported CTD is saved as plain text of properties id's. No meta data is being exported.
- - `Max string length` for all values is set to 30 000. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell
+ * Exported CTD is saved as plain text of properties id's. No meta data is being exported.
+ * `Max string length` for all values is set to 30 000. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell.
+
+### Usage example
+
+```
+let { exportXlsx } = require("[path]/flotiq-xlsx-migrate.js")
+let export_options = { 
+    apiKey: "[Flotiq API Key]",
+    ctdName: "[CTD API Name]"
+}
+const export_to_excel = async () => {
+    let result = await exportXlsx(export_options);
+    console.log(result);
+}
+export_to_excel();
+```
+
+### Result example
+
+```
+{
+  directoryPath: '`_dirname`//testxlsx.xlsx',
+  errors: null,
+  coTotal: 3,
+  co_success: 3
+}
+```
 
 ## Import
 
@@ -49,18 +75,23 @@ Options objects accepts following parameters:
 ### Usage
 
 Call function exportXlsx with options object as attribute, for example:
-> let import_options = { 
->   apiKey: "[Flotiq API Key]",
->   ctdName: "[CTD API Name]"
->   filePath: "[path to xlsx file]"
-> }
-> importXlsx(import_options)`
 
-Function returns following information:
+```
+let import_options = { 
+    apiKey: "[Flotiq API Key]",
+    ctdName: "[CTD API Name]",
+    filePath: "[path to xlsx file]"
+}
+importXlsx(import_options)`
+```
+
+Function returns following promise:
 For every sheet in xlsx workbook:
 * number of Content Objects successfully imported
-* number of errors in Content Objec import
-* errors data
+* number of errors in Content Object import
+* errors data (object)
+
+If options validation error occurs, function will not return number of errors and CO exported, instead it will return information about invalid options parameter.
 
 ### Options parameters
 
@@ -74,14 +105,50 @@ Options objects accepts following parameters:
 
 ### Notes
 
-- valid XLSX file looks just like the one that exportXlsx saves. First row on the sheet (header) should have names of CTD's properties, every following row is a separate Content Object, for example:
+* valid XLSX file looks just like the one that exportXlsx saves. First row on the sheet (header) should have names of CTD's properties, every following row is a separate Content Object, for example:
 
 | id | name | age |
 |--|--|--|
 | person-1 | John | 30 |
 | person-2 | Alex | 20 |
 
-- importXlsx allows you to import many sheets from the same workbook at once, however all of these sheets have to be dedicated to the same CTD and have this CTD's properties in the header.
+* importXlsx allows you to import many sheets from the same workbook at once, however all of these sheets have to be dedicated to the same CTD and have this CTD's properties in the header.
+* Parameter LIMIT which limits the number of Content Objects you will import from XLSX works individually for every sheet in workbook.
+
+### Usage example
+
+```
+let { importXlsx } = require("[path]/flotiq-xlsx-migrate.js")
+let import_options = { 
+    apiKey: "[Flotiq API Key]",
+    ctdName: "[CTD API Name]",
+    filePath: "[path to xlsx file]",
+}
+const import_from_excel = async () => {
+    let result = await importXlsx(import_options);
+    console.log(result);
+}
+import_from_excel();
+```
+
+### Result example
+
+Notice that the import function gives separate result for every sheet from your xlsx file, so in order to read result errors `result.[excel sheet name].sheetErrors`
+
+```
+{
+  Sheet1: {
+    sheetImportedCoCount: 98,
+    sheetErrorsCount: 2,
+    sheetErrors: [ [Object] ]
+  }
+  Sheet2: {
+    sheetImportedCoCount: 100,
+    sheetErrorsCount: 0,
+    sheetErrors: []
+    }
+}
+```
 
 ## Data mapping
 
