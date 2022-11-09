@@ -135,7 +135,7 @@ exportXlsx = async (options) => {
     const importOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
-        filePath: yup.string().required(),
+        filePath: yup.string().default(""),
         limit: yup.number().integer().default(-1),
         saveFile: yup.boolean().default(true),
         logResults: yup.boolean().default(false)
