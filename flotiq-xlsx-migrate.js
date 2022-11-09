@@ -4,6 +4,7 @@ const fs = require(`fs`);
 const fetch = require(`node-fetch`);
 const path = require(`path`);
 const yup = require(`yup`);
+const config = require("./config");
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
 const SYS_LIMIT = 10000;
 
@@ -257,21 +258,21 @@ exportXlsx = async (options) => {
 
 const fetchContentTypeDefinition = async (apiKey, ctdName) => {
     return fetch(
-        `https://api.flotiq.com/api/v1/internal/contenttype/${ctdName}?auth_token=${apiKey}`,
+        `${config.apiUrl}/api/v1/internal/contenttype/${ctdName}?auth_token=${apiKey}`,
         { method: 'GET' }
     );
 }
 
 const fetchContentObjects = async (apiKey, ctdName, page = 1, limit = 100) => {
     return fetch(
-        `https://api.flotiq.com/api/v1/content/${ctdName}?page=${page}&limit=${limit}&order_by=internal.createdAt&order_direction=asc&auth_token=${apiKey}`,
+        `${config.apiUrl}/api/v1/content/${ctdName}?page=${page}&limit=${limit}&order_by=internal.createdAt&order_direction=asc&auth_token=${apiKey}`,
         { method: 'GET' }
     );
 }
 
 const batchContentObjects = async (contentObjects, apiKey, ctdName, updateExisting) => {
         return await fetch(
-            `https://api.flotiq.com/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
+            `${config.apiUrl}/api/v1/content/${ctdName}/batch?updateExisting=${updateExisting}&auth_token=${apiKey}`, {
                 method: 'post',
                 body: JSON.stringify(contentObjects),
                 headers: {'Content-Type': 'application/json'}
