@@ -46,15 +46,15 @@ Options objects accepts following parameters:
 
 ```
 let { exportXlsx } = require("[path]/flotiq-xlsx-migrate.js")
-let export_options = { 
+let exportOptions = { 
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]"
 }
-const export_to_excel = async () => {
-    let result = await exportXlsx(export_options);
+const exportToExcel = async () => {
+    let result = await exportXlsx(exportOptions);
     console.log(result);
 }
-export_to_excel();
+exportToExcel();
 ```
 
 ### Result example
@@ -77,12 +77,17 @@ export_to_excel();
 Call function exportXlsx with options object as attribute, for example:
 
 ```
-let import_options = { 
+let { importXlsx } = require("[path]/flotiq-xlsx-migrate.js")
+let importOptions = { 
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]",
     filePath: "[path to xlsx file]"
 }
-importXlsx(import_options)`
+const importToFlotiq = async () => {
+    let result = await importXlsx(importOptions);
+    console.log(result);
+}
+importToFlotiq();
 ```
 
 Function returns following promise:
