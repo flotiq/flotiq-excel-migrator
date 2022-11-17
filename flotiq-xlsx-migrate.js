@@ -19,38 +19,41 @@ importXlsx = async (options) => {
     });
     const logResults = options.logResults;
 
+    console.time("Data import time");
+
+    let ctd = {}
     options = await importOptionsSchema.validate(options)
-        .then((v) => {
-            let allowedExtensions = [".xlsx", ".xlsm"]; //other extensions if ever needed go here
-            if (!fs.existsSync(options.filePath)) {
-                return {
+        .then((res) => {
+            let allowedExtensions = [".xlsx", ".xlsm"]; //other extensions if needed go here
+            if (!fs.existsSync(res.filePath)) {
+                throw {
                     param: `filePath`,
                     errors: `no such file in directory specified in filePath`
                 }
-            } else if (!allowedExtensions.includes(path.parse(options.filePath).ext)) {
-                return {
+            } else if (!allowedExtensions.includes(path.parse(res.filePath).ext)) {
+                throw {
                     param: `filePath`,
                     errors: `wrong file extension, allowed extensions are: ${allowedExtensions}`
                 }
             } else {
-                return v;
+                return res;
             }
+        })
+        .then(async (res) => {
+            ctd = await fetchContentTypeDefinition(res.apiKey, res.ctdName);
+            if (ctd?.status < 200 || ctd?.status >= 300) {
+                throw {
+                    param: null,
+                    errors: `fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+                };
+            } else return res;
         })
         .catch((e) => {
             return {
-                param: e.params.path,
+                param: e?.params?.path || e.param,
                 errors: e.errors
             }
         })
-
-    console.time("Data import time");
-    let ctd = await fetchContentTypeDefinition(options.apiKey, options.ctdName);
-    if (ctd?.status < 200 || ctd?.status >= 300) {
-        options = {
-            param: null,
-            errors: `fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
-        };
-    }
 
     if (options.errors) {
         if (logResults) {
