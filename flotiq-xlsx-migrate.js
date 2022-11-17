@@ -143,7 +143,7 @@ importXlsx = async (options) => {
 }
 
 exportXlsx = async (options) => {
-    const importOptionsSchema = yup.object().shape({
+    const exportOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
         filePath: yup.string().default(""),
@@ -154,7 +154,7 @@ exportXlsx = async (options) => {
     const logResults = options.logResults;
 
     let ctd = {};
-    options = await importOptionsSchema.validate(options)
+    options = await exportOptionsSchema.validate(options)
         .then(async (res) => {
             ctd = await fetchContentTypeDefinition(res.apiKey, res.ctdName);
             if (ctd?.status < 200 || ctd?.status >= 300) {
