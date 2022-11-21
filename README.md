@@ -178,3 +178,7 @@ Form in which Flotiq data is exported to / imported from xlsx varies on property
 | Block | JSON |
 
 *separator can be changed by changing the const value in converter.js
+
+## Notes
+
+ - `Max string length` is set to 30 000 for all values. This can be changed by changing the const value in converter.js, however ms excel has trouble handling text with length > 30 000 in one cell
