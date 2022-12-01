@@ -18,7 +18,11 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
-  "repository": "https://github.com/flotiq/flotiq-excel-migrator.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flotiq/flotiq-excel-migrator.git"
+  },
+  "homepage": "https://github.com/flotiq/flotiq-excel-migrator",
   "author": "Flotiq team <hello@flotiq.com>",
   "license": "MIT",
   "dependencies": {
