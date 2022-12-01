@@ -264,9 +264,9 @@ exportXlsx = async (options) => {
         await writeXlsxFile(data, {
             filePath: dirPath
         });
-    } // else { //saves export data for write-excel-file/node
-    //     response.data = data;
-    // }
+    } else {
+        response.data = data;
+    }
     console.log(`Export to xlsx finished`);
 
     return response;

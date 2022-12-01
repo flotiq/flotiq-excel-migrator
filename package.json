@@ -1,4 +1,26 @@
 {
+  "name": "flotiq-excel-migrator",
+  "version": "1.0",
+  "description": "Migrator of of Flotiq data to and from MS Excel",
+  "main": "flotiq-xlsx-migrate.js",
+  "private": false,
+  "bin": {
+    "flotiq-wordpress-import": "bin/flotiq-excel-migrator"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "flotiq",
+    "excel",
+    "xlsx"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": "https://github.com/flotiq/flotiq-excel-migrator.git",
+  "author": "Flotiq team <hello@flotiq.com>",
+  "license": "MIT",
   "dependencies": {
     "convert-excel-to-json": "^1.7.0",
     "node-fetch": "2",
