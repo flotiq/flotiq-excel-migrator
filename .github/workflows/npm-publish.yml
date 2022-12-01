@@ -1,31 +1,22 @@
-name: Flotiq Excel Migrator Package
-
+name: npm-publish
 on:
-  release:
-    types: [created]
-
+  push:
+    branches:
+      - main
 jobs:
-  build:
+  npm-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Publish if version has been updated
+        uses: pascalgn/npm-publish-action@99edcbddc04403efe904d1ad125c867d4dcabdcd
         with:
-          node-version: 16
-      - run: npm ci
-      - run: npm test
-
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm publish
+          tag_name: "v%s"
+          tag_message: "v%s"
+          create_tag: "true"
+          commit_pattern: "^Release (\\S+)"
+          workspace: "."
+          publish_command: "npm"
+          publish_args: "--non-interactive"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          
