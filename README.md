@@ -34,7 +34,7 @@ Options objects accepts following parameters:
 * ctdName - API name of Content Type Definition you wish to export,
 * filePath (optional) - the directory to which the xlsx file is to be saved, current directory by default,
 * limit (optional) - number of Content Objects you wish to export, exports up to 10 000 Content Objects by default,
-* saveFile (optional) - boolean value determining whether to save the xlsx file in directory, true by default,
+* saveFile (optional) - boolean value determining whether to save the xlsx file in directory, true by default, if the value is false, function will return parameter `data` with data from Flotiq converted for MS Excel,
 * logResults (optional) - boolean value determining whether to type out results into the console, false by default.
 
 ### Notes
