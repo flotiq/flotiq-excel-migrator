@@ -44,7 +44,7 @@ importXlsx = async (options) => {
             if (ctd?.status < 200 || ctd?.status >= 300) {
                 throw {
                     param: null,
-                    errors: `Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+                    errors: `Fetching content type failed:  Error ${ctd.status} : ${ctd.statusText}`
                 };
             } else return res;
         })
@@ -160,7 +160,7 @@ exportXlsx = async (options) => {
             if (ctd?.status < 200 || ctd?.status >= 300) {
                 throw {
                     param: null,
-                    errors: `Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+                    errors: `Fetching content type failed:  Error ${ctd.status} : ${ctd.statusText}`
                 };
             }
             return res;
