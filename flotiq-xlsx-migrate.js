@@ -28,12 +28,12 @@ importXlsx = async (options) => {
             if (!fs.existsSync(res.filePath)) {
                 throw {
                     param: `filePath`,
-                    errors: `no such file in directory specified in filePath`
+                    errors: `No such file in directory specified in filePath`
                 }
             } else if (!allowedExtensions.includes(path.parse(res.filePath).ext)) {
                 throw {
                     param: `filePath`,
-                    errors: `wrong file extension, allowed extensions are: ${allowedExtensions}`
+                    errors: `Wrong file extension, allowed extensions are: ${allowedExtensions}`
                 }
             } else {
                 return res;
@@ -44,7 +44,7 @@ importXlsx = async (options) => {
             if (ctd?.status < 200 || ctd?.status >= 300) {
                 throw {
                     param: null,
-                    errors: `fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+                    errors: `Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
                 };
             } else return res;
         })
@@ -56,7 +56,7 @@ importXlsx = async (options) => {
         })
 
     if (options.errors) {
-        if (logResults) {
+        if (logResults !== false) {
             console.log("Errors have occured:\n", options);
         }
         return options;
@@ -160,7 +160,7 @@ exportXlsx = async (options) => {
             if (ctd?.status < 200 || ctd?.status >= 300) {
                 throw {
                     param: null,
-                    errors: `fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
+                    errors: `Fetching content type failed:\n   Error ${ctd.status} : ${ctd.statusText}`
                 };
             }
             return res;
@@ -173,7 +173,7 @@ exportXlsx = async (options) => {
         })
 
     if (options.errors) {
-        if (logResults) {
+        if (logResults !== false) {
             console.log("Errors have occured:\n", options)
         }
         return options;
