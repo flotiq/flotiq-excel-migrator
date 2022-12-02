@@ -65,7 +65,7 @@ importXlsx = async (options) => {
     ctd = await ctd.json();
 
     let xlsxWorkbook = readXlsxFile({
-        sourceFile: options.filePath,
+        sourceFile: path.resolve(options.filePath),
         columnToKey: {
             '*': '{{columnHeader}}'
         }
@@ -183,7 +183,7 @@ exportXlsx = async (options) => {
     
     ctd = await ctd.json();
     data[0] = ctdToHeader(ctd);
-    let dirPath = `${ __dirname }/${ options.filePath }/${ ctd.label }.xlsx`;
+    let dirPath = `${ path.resolve(options.filePath) }/${ ctd.label }.xlsx`;
     let response = {
         directoryPath: dirPath,
         errors: null,
@@ -258,8 +258,8 @@ exportXlsx = async (options) => {
         }
     }
     if (options.saveFile) {
-        if (!fs.existsSync(`${ __dirname }/${ options.filePath }`)) {
-            fs.mkdirSync(`${ __dirname }/${ options.filePath }`, { recursive: true });
+        if (!fs.existsSync(path.resolve(options.filePath))) {
+            fs.mkdirSync(path.resolve(options.filePath), { recursive: true });
         }
         await writeXlsxFile(data, {
             filePath: dirPath
