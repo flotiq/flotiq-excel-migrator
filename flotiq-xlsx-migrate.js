@@ -203,8 +203,10 @@ exportXlsx = async (options) => {
         let fieldTypes = ctdFieldTypes(ctd);
 
         if (co?.status < 200 || co?.status >= 300) {
-            console.log(`Fetching content objects failed:\n   Error ${co.status} : ${co.statusText}`);
-            return;
+            throw {
+                param: null,
+                errors: `Fetching content objects failed:   Error ${co.status} : ${co.statusText}`
+            };
         }
         co = await co.json();
         const totalPages = co.total_pages;
