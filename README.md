@@ -16,11 +16,19 @@ Run `yarn` to install packages.
 ### Usage
 
 Call function exportXlsx with options object as an attribute, for example:
-let export_options = { 
+
+```
+let flotiqXlsx = require("flotiq-excel-migrator")
+let exportOptions = { 
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]"
 }
-exportXlsx(export_options)`
+const exportFromFlotiq = async () => {
+    let result = await flotiqXlsx.exportXlsx(exportOptions);
+    console.log(result);
+}
+exportFromFlotiq();
+```
 
 Function returns the following information:
 * FilePath
@@ -43,21 +51,6 @@ Options object accepts the following parameters:
  * Exported CTD is saved as plain text of properties id's. No metadata is being exported.
  * `Max string length` for all values is set to 30.000 because MS Excel has trouble handling text with length > 30 000 in one cell.
 
-### Usage example
-
-```
-let { exportXlsx } = require("[path]/flotiq-xlsx-migrate.js")
-let exportOptions = { 
-    apiKey: "[Flotiq API Key]",
-    ctdName: "[CTD API Name]"
-}
-const exportToExcel = async () => {
-    let result = await exportXlsx(exportOptions);
-    console.log(result);
-}
-exportToExcel();
-```
-
 ### Result example
 
 ```
@@ -78,14 +71,14 @@ exportToExcel();
 Call function exportXlsx with options object as an attribute, for example:
 
 ```
-let { importXlsx } = require("[path]/flotiq-xlsx-migrate.js")
+let flotiqXlsx = require("flotiq-excel-migrator")
 let importOptions = { 
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]",
     filePath: "[path to xlsx file]"
 }
 const importToFlotiq = async () => {
-    let result = await importXlsx(importOptions);
+    let result = await flotiqXlsx.importXlsx(importOptions);
     console.log(result);
 }
 importToFlotiq();
@@ -120,22 +113,6 @@ Options object accepts the following parameters:
 
 * importXlsx allows you to import many sheets from the same workbook. However, these sheets must be dedicated to the same CTD and have this CTD's properties in the header.
 * Parameter LIMIT limits the number of Content Objects you will import from XLSX works individually for every sheet in the workbook.
-
-### Usage example
-
-```
-let { importXlsx } = require("[path]/flotiq-xlsx-migrate.js")
-let import_options = { 
-    apiKey: "[Flotiq API Key]",
-    ctdName: "[CTD API Name]",
-    filePath: "[path to xlsx file]",
-}
-const import_from_excel = async () => {
-    let result = await importXlsx(import_options);
-    console.log(result);
-}
-import_from_excel();
-```
 
 ### Result example
 
