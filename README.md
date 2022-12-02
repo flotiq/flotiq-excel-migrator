@@ -171,10 +171,10 @@ The form in which Flotiq data is exported to / imported from xlsx varies on prop
 | Radio | Text |
 | Checkbox | TRUE / FALSE |
 | Select | Text |
-| Relation | API Url's in the form of text, separated with commas*, for example: `/api/v1/content/[ctdName]/[coName1],/api/v1/content/[ctdName]/[coName2]` |
+| Relation | API Url's in the form of text, separated with commas, for example: `/api/v1/content/[ctdName]/[coName1],/api/v1/content/[ctdName]/[coName2]` |
 | List | JSON |
 | Geo | JSON |
-| Media | API Url in form of text, separated with commas*, for example: `/api/v1/content/_media/[mediaId1],/api/v1/content/_media/[mediaId2]` |
+| Media | API Url in form of text, separated with commas, for example: `/api/v1/content/_media/[mediaId1],/api/v1/content/_media/[mediaId2]` |
 | Date time | Date |
 | Block | JSON |
 
