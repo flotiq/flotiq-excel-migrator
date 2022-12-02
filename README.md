@@ -4,7 +4,7 @@ Module for migrating Flotiq data to and from xlsx file.
 
 ## Setup
 
-Run `npm install`
+Run `yarn` to install packages
 
 Add this module to your project and import functions from flotiq-xlsx-migrate.js
 
