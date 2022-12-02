@@ -15,7 +15,7 @@ importXlsx = async (options) => {
         filePath: yup.string().required(),
         limit: yup.number().integer().default(-1),
         updateExisting: yup.boolean().default(true),
-        logResults: yup.boolean().default(false)
+        logResults: yup.boolean().default(true)
     });
     const logResults = options.logResults;
 
@@ -149,7 +149,7 @@ exportXlsx = async (options) => {
         filePath: yup.string().default(""),
         limit: yup.number().integer().default(-1),
         saveFile: yup.boolean().default(true),
-        logResults: yup.boolean().default(false)
+        logResults: yup.boolean().default(true)
     });
     const logResults = options.logResults;
 
