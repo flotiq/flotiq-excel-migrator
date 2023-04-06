@@ -14,6 +14,7 @@ importXlsx = async (options) => {
         apiKey: yup.string().required(),
         filePath: yup.string().required(),
         limit: yup.number().integer().default(-1),
+        batchLimit: yup.number().integer().max(100).min(1).default(100),
         updateExisting: yup.boolean().default(true),
         logResults: yup.boolean().default(true)
     });
@@ -112,9 +113,8 @@ importXlsx = async (options) => {
         }
         coArray.pop();
         
-        const limit = 100;
-        for (let j = 0; j < coArray.length; j += limit) {
-            let page = coArray.slice(j, j + limit);
+        for (let j = 0; j < coArray.length; j += options.batchLimit) {
+            let page = coArray.slice(j, j + options.batchLimit);
             let batchResponse = await batchContentObjects(page, options.apiKey, options.ctdName, options.updateExisting);
             try {
                 let batchResponseJson = await batchResponse.json()

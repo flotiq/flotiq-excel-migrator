@@ -98,9 +98,10 @@ Options object accepts the following parameters:
 * apiKey - API key to your Flotiq account,
 * ctdName - API name of Content Type Definition you wish to export,
 * filePath - the directory to the xlsx file you wish to import data from,
-* limit (optional) - Number of Content Objects you wish to import, imports up to 10 000 Content Objects by default,
+* limit (optional) - number of Content Objects you wish to import, imports up to 10 000 Content Objects by default,
 * logResults (optional) - boolean value determining whether to type out results into the console, true by default.
-* updateExisting (optional) boolean value determining whether to update existing Content Objects, true by default.
+* updateExisting (optional) - boolean value determining whether to update existing Content Objects, true by default.
+* batchLimit (optional) - number of Content Objects imported per batch call, 100 by default.
 
 ### Notes
 
