@@ -93,7 +93,7 @@ importXlsx = async (options) => {
             return setInterval(() => {
                 i = (i > 3) ? 0 : i;
                 console.clear();
-                console.log(`Data import in progress... ${h[i]}\nExported objects: ${coSuccessCount} out of ${coTotalCount}`);
+                console.log(`Data import in progress... ${h[i]}\nImported objects: ${coSuccessCount} out of ${coTotalCount}`);
                 i++;
             }, 300);
         }
