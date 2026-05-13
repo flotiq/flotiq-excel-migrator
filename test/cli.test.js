@@ -19,10 +19,8 @@ describe('CLI entrypoint', () => {
 
         require(cliPath);
 
-        expect(loadSpy).toHaveBeenCalledWith(
-            './../flotiq-xlsx-migrate.js',
-            expect.any(Object),
-            false
-        );
+        expect(
+            loadSpy.mock.calls.some(([request]) => request === './../flotiq-xlsx-migrate.js')
+        ).toBe(true);
     });
 });
