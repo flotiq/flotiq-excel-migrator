@@ -1,5 +1,5 @@
 const writeXlsxFile = require(`write-excel-file/node`);
-const readXlsxFile = require('convert-excel-to-json');
+const readXlsxFile = require('read-excel-file/node');
 const fs = require(`fs`);
 const fetch = require(`node-fetch`);
 const path = require(`path`);
@@ -7,6 +7,34 @@ const yup = require(`yup`);
 const config = require("./config");
 const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
 const SHEET_CO_NUMBER_LIMIT = 10000;
+
+const readWorkbook = async (filePath) => {
+    const sourceFile = path.resolve(filePath);
+    const sheetNames = await readXlsxFile.readSheetNames(sourceFile);
+    const workbook = {};
+
+    for (const sheetName of sheetNames) {
+        const rows = await readXlsxFile(sourceFile, { sheet: sheetName });
+        const headerRow = rows[0] || [];
+
+        workbook[sheetName] = rows.map((row) => {
+            const record = {};
+
+            for (let columnIndex = 0; columnIndex < headerRow.length; columnIndex++) {
+                const header = headerRow[columnIndex];
+                if (header === undefined || header === null || header === ``) {
+                    continue;
+                }
+
+                record[header] = row ? row[columnIndex] : undefined;
+            }
+
+            return record;
+        });
+    }
+
+    return workbook;
+}
 
 importXlsx = async (options) => {
     let importOptionsSchema = yup.object().shape({
@@ -65,12 +93,7 @@ importXlsx = async (options) => {
 
     ctd = await ctd.json();
 
-    let xlsxWorkbook = readXlsxFile({
-        sourceFile: path.resolve(options.filePath),
-        columnToKey: {
-            '*': '{{columnHeader}}'
-        }
-    })
+    let xlsxWorkbook = await readWorkbook(options.filePath);
     let fieldTypes = ctdFieldTypes(ctd);
 
     let coTotalCount = 0;
