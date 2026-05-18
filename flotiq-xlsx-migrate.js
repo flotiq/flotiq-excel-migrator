@@ -156,9 +156,15 @@ const importXlsx = async (options) => {
     }
     console.log(`Import from xlsx finished`);
     clearInterval(loading);
+    
+    const hasErrors = Object.values(importResult).some(sheetResult => sheetResult.sheetErrorsCount > 0);
+    
     if (logResults) {
-        console.clear();
-        console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount}`)
+        if (hasErrors) {
+            console.log(`Content objects import completed with errors: ${coSuccessCount} successfully imported out of ${coTotalCount}`);
+        } else {
+            console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount}`);
+        }
         console.timeEnd(`Data import time`);
     }
     return importResult;
