@@ -10,11 +10,10 @@ const SHEET_CO_NUMBER_LIMIT = 10000;
 
 const readWorkbook = async (filePath) => {
     const sourceFile = path.resolve(filePath);
-    const sheetNames = await readXlsxFile.readSheetNames(sourceFile);
     const workbook = {};
 
-    for (const sheetName of sheetNames) {
-        const rows = await readXlsxFile(sourceFile, { sheet: sheetName });
+    const sheets = await readXlsxFile(sourceFile);
+    for (const { sheet: sheetName, data: rows } of sheets) {
         const headerRow = rows[0] || [];
 
         workbook[sheetName] = rows.map((row) => {

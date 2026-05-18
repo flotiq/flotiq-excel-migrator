@@ -38,14 +38,11 @@ describe('flotiq-xlsx-migrate', () => {
     let importXlsx;
     let fetchMock;
     let readXlsxMock;
-    let readSheetNamesMock;
     let writeXlsxMock;
 
     beforeEach(() => {
         fetchMock = vi.fn();
         readXlsxMock = vi.fn();
-        readSheetNamesMock = vi.fn();
-        readXlsxMock.readSheetNames = readSheetNamesMock;
         writeXlsxMock = vi.fn().mockResolvedValue(undefined);
 
         setModuleExport(fetchModulePath, fetchMock);
@@ -162,11 +159,15 @@ describe('flotiq-xlsx-migrate', () => {
 
     it('imports workbook rows in batches and aggregates API results per sheet', async () => {
         vi.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
-        readSheetNamesMock.mockResolvedValue(['Sheet1']);
         readXlsxMock.mockResolvedValue([
-            ['id', 'title', 'metadata'],
-            ['article-1', 'First', '{"slug":"first"}'],
-            ['article-2', 'Second', '{"slug":"second"}']
+            {
+                sheet: 'Sheet1',
+                data: [
+                    ['id', 'title', 'metadata'],
+                    ['article-1', 'First', '{"slug":"first"}'],
+                    ['article-2', 'Second', '{"slug":"second"}']
+                ]
+            }
         ]);
         fetchMock
             .mockResolvedValueOnce({
@@ -198,10 +199,7 @@ describe('flotiq-xlsx-migrate', () => {
             logResults: false
         });
 
-        expect(readSheetNamesMock).toHaveBeenCalledWith(path.resolve('/tmp/articles.xlsx'));
-        expect(readXlsxMock).toHaveBeenCalledWith(path.resolve('/tmp/articles.xlsx'), {
-            sheet: 'Sheet1'
-        });
+        expect(readXlsxMock).toHaveBeenCalledWith(path.resolve('/tmp/articles.xlsx'));
         expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(fetchMock.mock.calls[1][1]).toEqual({
             method: 'post',
