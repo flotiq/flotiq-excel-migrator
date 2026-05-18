@@ -1,11 +1,11 @@
-const writeXlsxFile = require(`write-excel-file/node`);
-const readXlsxFile = require('read-excel-file/node');
-const fs = require(`fs`);
-const fetch = require(`node-fetch`);
-const path = require(`path`);
-const yup = require(`yup`);
-const config = require("./config");
-const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
+import writeXlsxFile from 'write-excel-file/node';
+import readXlsxFile from 'read-excel-file/node';
+import fs from 'node:fs';
+import fetch from 'node-fetch';
+import path from 'node:path';
+import yup from 'yup';
+import config from './config.js';
+import { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } from './converter.js';
 const SHEET_CO_NUMBER_LIMIT = 10000;
 
 const readWorkbook = async (filePath) => {
@@ -35,7 +35,7 @@ const readWorkbook = async (filePath) => {
     return workbook;
 }
 
-importXlsx = async (options) => {
+const importXlsx = async (options) => {
     let importOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
@@ -164,7 +164,7 @@ importXlsx = async (options) => {
     return importResult;
 }
 
-exportXlsx = async (options) => {
+const exportXlsx = async (options) => {
     const exportOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
@@ -319,4 +319,4 @@ const batchContentObjects = async (contentObjects, apiKey, ctdName, updateExisti
         });
 }
 
-module.exports = { exportXlsx, importXlsx };
+export { exportXlsx, importXlsx };

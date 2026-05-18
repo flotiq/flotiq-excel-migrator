@@ -6,7 +6,7 @@ const ctdToHeader = (data) => {
         value: "id",
         fontWeight: `bold`
     }];
-    for (field in data.schemaDefinition.allOf[1].properties) {
+    for (const field in data.schemaDefinition.allOf[1].properties) {
         let obj = {
             value: field,
             fontWeight: `bold` // additionall cell properties for table headers here
@@ -19,7 +19,7 @@ const ctdToHeader = (data) => {
 const ctdFieldTypes = (data) => {
     let fieldTypes = {};
 
-    objTypes = {
+    const objTypes = {
         "richtext": String,
         "textMarkdown": "json",
         "text": String,
@@ -34,9 +34,9 @@ const ctdFieldTypes = (data) => {
         "select": String,
         "object": "json",
         "block": "json"
-    }
+    };
 
-    for (field in data.metaDefinition.propertiesConfig) {
+    for (const field in data.metaDefinition.propertiesConfig) {
         fieldTypes[field] = {
             propertyLabel: data.metaDefinition.propertiesConfig[field].label,
             field: objTypes[data.metaDefinition.propertiesConfig[field].inputType]
@@ -52,7 +52,7 @@ const coToRecord = (data, fieldTypes) => {
     }];
     let coErrors = [];
 
-    for (type in fieldTypes) {
+    for (const type in fieldTypes) {
         let obj = formatContent(data[type], fieldTypes[type].field);
         if (obj.error) {
             coErrors.push({
@@ -211,4 +211,4 @@ let validate = (data, type) => {
     } return null;
 }
 
-module.exports = { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo };
+export { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo };

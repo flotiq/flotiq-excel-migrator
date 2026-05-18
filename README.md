@@ -18,13 +18,14 @@ Run `yarn` to install packages.
 Call function exportXlsx with options object as an attribute, for example:
 
 ```
-let flotiqXlsx = require("flotiq-excel-migrator")
-let exportOptions = { 
+import { exportXlsx } from "flotiq-excel-migrator";
+
+const exportOptions = {
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]"
 }
 const exportFromFlotiq = async () => {
-    let result = await flotiqXlsx.exportXlsx(exportOptions);
+  let result = await exportXlsx(exportOptions);
     console.log(result);
 }
 exportFromFlotiq();
@@ -71,14 +72,15 @@ Options object accepts the following parameters:
 Call function exportXlsx with options object as an attribute, for example:
 
 ```
-let flotiqXlsx = require("flotiq-excel-migrator")
-let importOptions = { 
+import { importXlsx } from "flotiq-excel-migrator";
+
+const importOptions = {
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]",
     filePath: "[path to xlsx file]"
 }
 const importToFlotiq = async () => {
-    let result = await flotiqXlsx.importXlsx(importOptions);
+  let result = await importXlsx(importOptions);
     console.log(result);
 }
 importToFlotiq();

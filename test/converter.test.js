@@ -1,8 +1,5 @@
-import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
-
-const require = createRequire(import.meta.url);
-const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require('../converter');
+import { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } from '../converter.js';
 
 describe('converter', () => {
     it('creates a header row from the CTD schema definition', () => {

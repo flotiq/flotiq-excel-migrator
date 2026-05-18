@@ -1,56 +1,35 @@
 import path from 'node:path';
-import { createRequire } from 'node:module';
+import fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const require = createRequire(import.meta.url);
+const fetchMock = vi.fn();
+const readXlsxMock = vi.fn();
+const writeXlsxMock = vi.fn();
 
-const moduleUnderTestPath = path.resolve(__dirname, '../flotiq-xlsx-migrate.js');
-const fetchModulePath = require.resolve('node-fetch');
-const readXlsxModulePath = require.resolve('read-excel-file/node');
-const writeXlsxModulePath = require.resolve('write-excel-file/node');
+vi.mock('node-fetch', () => ({
+    default: fetchMock
+}));
 
-const originalModuleEntries = {
-    fetch: require.cache[fetchModulePath],
-    readXlsx: require.cache[readXlsxModulePath],
-    writeXlsx: require.cache[writeXlsxModulePath]
-};
+vi.mock('read-excel-file/node', () => ({
+    default: readXlsxMock
+}));
 
-const restoreModuleEntry = (modulePath, originalEntry) => {
-    if (originalEntry) {
-        require.cache[modulePath] = originalEntry;
-        return;
-    }
-
-    delete require.cache[modulePath];
-};
-
-const setModuleExport = (modulePath, exports) => {
-    require.cache[modulePath] = {
-        id: modulePath,
-        filename: modulePath,
-        loaded: true,
-        exports
-    };
-};
+vi.mock('write-excel-file/node', () => ({
+    default: writeXlsxMock
+}));
 
 describe('flotiq-xlsx-migrate', () => {
     let exportXlsx;
     let importXlsx;
-    let fetchMock;
-    let readXlsxMock;
-    let writeXlsxMock;
 
-    beforeEach(() => {
-        fetchMock = vi.fn();
-        readXlsxMock = vi.fn();
-        writeXlsxMock = vi.fn().mockResolvedValue(undefined);
+    beforeEach(async () => {
+        fetchMock.mockReset();
+        readXlsxMock.mockReset();
+        writeXlsxMock.mockReset();
+        writeXlsxMock.mockResolvedValue(undefined);
 
-        setModuleExport(fetchModulePath, fetchMock);
-        setModuleExport(readXlsxModulePath, readXlsxMock);
-        setModuleExport(writeXlsxModulePath, writeXlsxMock);
-
-        delete require.cache[moduleUnderTestPath];
-        ({ exportXlsx, importXlsx } = require('../flotiq-xlsx-migrate.js'));
+        vi.resetModules();
+        ({ exportXlsx, importXlsx } = await import('../flotiq-xlsx-migrate.js'));
 
         vi.spyOn(console, 'log').mockImplementation(() => {});
         vi.spyOn(console, 'time').mockImplementation(() => {});
@@ -60,10 +39,6 @@ describe('flotiq-xlsx-migrate', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
-        delete require.cache[moduleUnderTestPath];
-        restoreModuleEntry(fetchModulePath, originalModuleEntries.fetch);
-        restoreModuleEntry(readXlsxModulePath, originalModuleEntries.readXlsx);
-        restoreModuleEntry(writeXlsxModulePath, originalModuleEntries.writeXlsx);
     });
 
     it('returns converted rows without writing a file when saveFile is false', async () => {
@@ -140,7 +115,7 @@ describe('flotiq-xlsx-migrate', () => {
     });
 
     it('returns a validation error when the XLSX file path does not exist', async () => {
-        const existsSyncSpy = vi.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
+        const existsSyncSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(false);
 
         const result = await importXlsx({
             apiKey: 'test-key',
@@ -158,7 +133,7 @@ describe('flotiq-xlsx-migrate', () => {
     });
 
     it('imports workbook rows in batches and aggregates API results per sheet', async () => {
-        vi.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
+        vi.spyOn(fs, 'existsSync').mockReturnValue(true);
         readXlsxMock.mockResolvedValue([
             {
                 sheet: 'Sheet1',
