@@ -6,6 +6,7 @@
   "main": "flotiq-xlsx-migrate.js",
   "private": false,
   "bin": {
+    "flotiq-excel-migrator": "bin/flotiq-excel-migrator",
     "flotiq-wordpress-import": "bin/flotiq-excel-migrator"
   },
   "scripts": {

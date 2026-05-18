@@ -76,6 +76,9 @@ const coToRecord = (data, fieldTypes) => {
 const recordToCo = (data, fieldTypes) => {
     let co = {};
     for (let property in data) {
+        if (data[property] === null) {
+            continue;
+        }
         if (property === "id") {
             co[property] = data[property];
             continue;

@@ -106,4 +106,22 @@ describe('converter', () => {
             ]
         });
     });
+
+    it('skips null fields when converting an Excel record', () => {
+        const fieldTypes = {
+            title: { propertyLabel: 'Title', field: String },
+            count: { propertyLabel: 'Count', field: Number },
+            metadata: { propertyLabel: 'Metadata', field: 'json' }
+        };
+
+        expect(recordToCo({
+            id: 'article-1',
+            title: null,
+            count: '12',
+            metadata: null
+        }, fieldTypes)).toEqual({
+            id: 'article-1',
+            count: 12
+        });
+    });
 });

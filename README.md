@@ -9,6 +9,36 @@ Add this module to your project and import functions from flotiq-xlsx-migrate.js
 
 Run `yarn` to install packages.
 
+## CLI
+
+This package also provides a CLI command.
+
+### Usage
+
+```
+flotiq-excel-migrator <command> [options]
+```
+
+Commands:
+* `export` - export content objects to an XLSX file,
+* `import` - import content objects from an XLSX file.
+
+Required options:
+* `--api-key <value>`
+* `--ctd-name <value>`
+
+Run help:
+
+```
+flotiq-excel-migrator --help
+```
+
+or:
+
+```
+flotiq-excel-migrator help
+```
+
 ## Export
 
 `exportXlsx` is the module's function for exporting Flotiq CTD and CO to the xlsx file.
@@ -116,6 +146,7 @@ Options object accepts the following parameters:
 
 * importXlsx allows you to import many sheets from the same workbook. However, these sheets must be dedicated to the same CTD and have this CTD's properties in the header.
 * Parameter LIMIT limits the number of Content Objects you will import from XLSX works individually for every sheet in the workbook.
+* Cells with `null` values are ignored during import and are not sent in the payload to Flotiq.
 
 ### Result example
 
