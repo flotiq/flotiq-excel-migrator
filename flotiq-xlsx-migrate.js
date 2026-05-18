@@ -85,7 +85,7 @@ const importXlsx = async (options) => {
 
     if (options.errors) {
         if (logResults !== false) {
-            console.log("Errors have occured:\n", options);
+            console.log("Errors have occurred:\n", options);
         }
         return options;
     }
@@ -196,7 +196,7 @@ const exportXlsx = async (options) => {
 
     if (options.errors) {
         if (logResults !== false) {
-            console.log("Errors have occured:\n", options)
+            console.log("Errors have occurred:\n", options)
         }
         return options;
     }
@@ -269,7 +269,7 @@ const exportXlsx = async (options) => {
             })();
             clearInterval(loading);
             if (errors.length !== 0) {
-                console.log(`Export errors occured!\n`)
+                console.log(`Export errors occurred!\n`)
                 for (let row in errors) {
                     console.log(`Errors in row ${Number(row) + 1}:`);
                     for (let error in errors[row]) {
