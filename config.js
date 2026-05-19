@@ -1,4 +1,5 @@
-let settings = {
+const settings = {
     apiUrl: 'https://api.flotiq.com'
-}
-module.exports = settings;
+};
+
+export default settings;

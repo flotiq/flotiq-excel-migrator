@@ -9,6 +9,36 @@ Add this module to your project and import functions from flotiq-xlsx-migrate.js
 
 Run `yarn` to install packages.
 
+## CLI
+
+This package also provides a CLI command.
+
+### Usage
+
+```
+flotiq-excel-migrator <command> [options]
+```
+
+Commands:
+* `export` - export content objects to an XLSX file,
+* `import` - import content objects from an XLSX file.
+
+Required options:
+* `--api-key <value>`
+* `--ctd-name <value>`
+
+Run help:
+
+```
+flotiq-excel-migrator --help
+```
+
+or:
+
+```
+flotiq-excel-migrator help
+```
+
 ## Export
 
 `exportXlsx` is the module's function for exporting Flotiq CTD and CO to the xlsx file.
@@ -18,13 +48,14 @@ Run `yarn` to install packages.
 Call function exportXlsx with options object as an attribute, for example:
 
 ```
-let flotiqXlsx = require("flotiq-excel-migrator")
-let exportOptions = { 
+import { exportXlsx } from "flotiq-excel-migrator";
+
+const exportOptions = {
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]"
 }
 const exportFromFlotiq = async () => {
-    let result = await flotiqXlsx.exportXlsx(exportOptions);
+  let result = await exportXlsx(exportOptions);
     console.log(result);
 }
 exportFromFlotiq();
@@ -71,14 +102,15 @@ Options object accepts the following parameters:
 Call function exportXlsx with options object as an attribute, for example:
 
 ```
-let flotiqXlsx = require("flotiq-excel-migrator")
-let importOptions = { 
+import { importXlsx } from "flotiq-excel-migrator";
+
+const importOptions = {
     apiKey: "[Flotiq API Key]",
     ctdName: "[CTD API Name]",
     filePath: "[path to xlsx file]"
 }
 const importToFlotiq = async () => {
-    let result = await flotiqXlsx.importXlsx(importOptions);
+  let result = await importXlsx(importOptions);
     console.log(result);
 }
 importToFlotiq();
@@ -114,6 +146,7 @@ Options object accepts the following parameters:
 
 * importXlsx allows you to import many sheets from the same workbook. However, these sheets must be dedicated to the same CTD and have this CTD's properties in the header.
 * Parameter LIMIT limits the number of Content Objects you will import from XLSX works individually for every sheet in the workbook.
+* Cells with `null` values are ignored during import and are not sent in the payload to Flotiq.
 
 ### Result example
 

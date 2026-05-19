@@ -1,14 +1,41 @@
-const writeXlsxFile = require(`write-excel-file/node`);
-const readXlsxFile = require('convert-excel-to-json');
-const fs = require(`fs`);
-const fetch = require(`node-fetch`);
-const path = require(`path`);
-const yup = require(`yup`);
-const config = require("./config");
-const { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } = require(`./converter`);
+import writeXlsxFile from 'write-excel-file/node';
+import readXlsxFile from 'read-excel-file/node';
+import fs from 'node:fs';
+import fetch from 'node-fetch';
+import path from 'node:path';
+import yup from 'yup';
+import config from './config.js';
+import { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } from './converter.js';
 const SHEET_CO_NUMBER_LIMIT = 10000;
 
-importXlsx = async (options) => {
+const readWorkbook = async (filePath) => {
+    const sourceFile = path.resolve(filePath);
+    const workbook = {};
+
+    const sheets = await readXlsxFile(sourceFile);
+    for (const { sheet: sheetName, data: rows } of sheets) {
+        const headerRow = rows[0] || [];
+
+        workbook[sheetName] = rows.map((row) => {
+            const record = {};
+
+            for (let columnIndex = 0; columnIndex < headerRow.length; columnIndex++) {
+                const header = headerRow[columnIndex];
+                if (header === undefined || header === null || header === ``) {
+                    continue;
+                }
+
+                record[header] = row ? row[columnIndex] : undefined;
+            }
+
+            return record;
+        });
+    }
+
+    return workbook;
+}
+
+const importXlsx = async (options) => {
     let importOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
@@ -58,19 +85,14 @@ importXlsx = async (options) => {
 
     if (options.errors) {
         if (logResults !== false) {
-            console.log("Errors have occured:\n", options);
+            console.log("Errors have occurred:\n", options);
         }
         return options;
     }
 
     ctd = await ctd.json();
 
-    let xlsxWorkbook = readXlsxFile({
-        sourceFile: path.resolve(options.filePath),
-        columnToKey: {
-            '*': '{{columnHeader}}'
-        }
-    })
+    let xlsxWorkbook = await readWorkbook(options.filePath);
     let fieldTypes = ctdFieldTypes(ctd);
 
     let coTotalCount = 0;
@@ -134,15 +156,21 @@ importXlsx = async (options) => {
     }
     console.log(`Import from xlsx finished`);
     clearInterval(loading);
+    
+    const hasErrors = Object.values(importResult).some(sheetResult => sheetResult.sheetErrorsCount > 0);
+    
     if (logResults) {
-        console.clear();
-        console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount}`)
+        if (hasErrors) {
+            console.log(`Content objects import completed with errors: ${coSuccessCount} successfully imported out of ${coTotalCount}`);
+        } else {
+            console.log(`Content objects successfully imported: ${coSuccessCount} out of ${coTotalCount}`);
+        }
         console.timeEnd(`Data import time`);
     }
     return importResult;
 }
 
-exportXlsx = async (options) => {
+const exportXlsx = async (options) => {
     const exportOptionsSchema = yup.object().shape({
         ctdName: yup.string().required(),
         apiKey: yup.string().required(),
@@ -174,7 +202,7 @@ exportXlsx = async (options) => {
 
     if (options.errors) {
         if (logResults !== false) {
-            console.log("Errors have occured:\n", options)
+            console.log("Errors have occurred:\n", options)
         }
         return options;
     }
@@ -247,7 +275,7 @@ exportXlsx = async (options) => {
             })();
             clearInterval(loading);
             if (errors.length !== 0) {
-                console.log(`Export errors occured!\n`)
+                console.log(`Export errors occurred!\n`)
                 for (let row in errors) {
                     console.log(`Errors in row ${Number(row) + 1}:`);
                     for (let error in errors[row]) {
@@ -297,4 +325,4 @@ const batchContentObjects = async (contentObjects, apiKey, ctdName, updateExisti
         });
 }
 
-module.exports = { exportXlsx, importXlsx };
+export { exportXlsx, importXlsx };
