@@ -1,114 +1,93 @@
 #!/usr/bin/env node
 
-import { exportXlsx, importXlsx } from './../flotiq-xlsx-migrate.js';
+import { importXlsx } from '../src/xls-import.js';
+import { exportXlsx } from '../src/xls-export.js';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-const helpText = `Flotiq Excel Migrator
-
-Usage:
-  flotiq-excel-migrator <command> [options]
-
-Commands:
-  export              Export content objects to an XLSX file
-  import              Import content objects from an XLSX file
-
-Required options:
-  --api-key <value>   Flotiq API key
-  --ctd-name <value>  Content type definition API name
-
-Options:
-  --file-path <path>      Export directory or XLSX file path for import
-  --limit <number>        Limit number of processed content objects
-  --batch-limit <number>  Batch size for import (1-100)
-  --no-update-existing    Disable updating existing objects on import
-  --no-save-file          Return export data without writing an XLSX file
-  --no-log-results        Disable progress and summary logs
-  -h, --help              Show this help message
-
-Examples:
-  flotiq-excel-migrator export --api-key abc --ctd-name product --file-path ./exports
-  flotiq-excel-migrator import --api-key abc --ctd-name product --file-path ./products.xlsx
-`;
-
-const parseArgs = (argv) => {
-	const options = {};
-
-	for (let i = 0; i < argv.length; i++) {
-		const arg = argv[i];
-
-		if (arg === '--help' || arg === '-h') {
-			options.help = true;
-			continue;
-		}
-
-		if (arg.startsWith('--no-')) {
-			const key = arg.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-			options[key] = false;
-			continue;
-		}
-
-		if (arg.startsWith('--')) {
-			const key = arg.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-			const nextArg = argv[i + 1];
-
-			if (nextArg === undefined || nextArg.startsWith('-')) {
-				options[key] = true;
-				continue;
-			}
-
-			options[key] = nextArg;
-			i++;
-		}
-	}
-
-	if (options.limit !== undefined) {
-		options.limit = Number.parseInt(options.limit, 10);
-	}
-	if (options.batchLimit !== undefined) {
-		options.batchLimit = Number.parseInt(options.batchLimit, 10);
-	}
-
-	return options;
-};
-
-const printHelp = () => {
-	console.log(helpText);
-};
+const addSharedOptions = (builder) => builder
+	.option('api-key', {
+		type: 'string',
+		demandOption: true,
+		describe: 'Flotiq API key'
+	})
+	.option('ctd-name', {
+		type: 'string',
+		demandOption: true,
+		describe: 'Content type definition API name'
+	})
+	.option('file-path', {
+		type: 'string',
+		describe: 'Export directory or XLSX file path for import'
+	})
+	.option('limit', {
+		type: 'number',
+		describe: 'Limit number of processed content objects'
+	})
+	.option('log-results', {
+		type: 'boolean',
+		default: true,
+		describe: 'Enable progress and summary logs'
+	});
 
 const run = async () => {
-	const [, , ...argv] = process.argv;
-	const command = argv[0];
+	const argv = hideBin(process.argv);
+	const cli = yargs(argv)
+		.scriptName('flotiq-excel-migrator')
+		.usage('Usage: $0 <command> [options]')
+		.locale('en')
+		.command(
+			'export',
+			'Export content objects to an XLSX file',
+			(builder) => addSharedOptions(builder)
+				.option('save-file', {
+					type: 'boolean',
+					default: true,
+					describe: 'Write the XLSX output to a file'
+				}),
+			async (options) => {
+				await exportXlsx(options);
+			}
+		)
+		.command(
+			'import',
+			'Import content objects from an XLSX file',
+			(builder) => addSharedOptions(builder)
+				.option('batch-limit', {
+					type: 'number',
+					describe: 'Batch size for import (1-100)'
+				})
+				.option('update-existing', {
+					type: 'boolean',
+					default: true,
+					describe: 'Update existing objects during import'
+				}),
+			async (options) => {
+				await importXlsx(options);
+			}
+		)
+		.strictCommands(true)
+		.strictOptions(true)
+		.help('help')
+		.alias('help', 'h')
+		.showHelpOnFail(true)
+		.exitProcess(false)
+		.fail((msg, err) => {
+			if (msg) {
+				console.error(msg);
+			}
+			if (err && !msg) {
+				console.error(err?.message || err);
+			}
+			process.exitCode = 1;
+		});
 
-	if (!command || command === 'help' || command === '--help' || command === '-h') {
-		printHelp();
+	if (argv.length === 0) {
+		cli.showHelp('log');
 		return;
 	}
 
-	const options = parseArgs(argv.slice(1));
-	if (options.help) {
-		printHelp();
-		return;
-	}
-
-	if (!options.apiKey || !options.ctdName) {
-		console.error('Missing required options: --api-key and --ctd-name are required.');
-		printHelp();
-		process.exitCode = 1;
-		return;
-	}
-
-	let result;
-	if (command === 'export') {
-		result = await exportXlsx(options);
-	} else if (command === 'import') {
-		result = await importXlsx(options);
-	} else {
-		console.error(`Unknown command: ${command}`);
-		printHelp();
-		process.exitCode = 1;
-		return;
-	}
-
-	console.log(JSON.stringify(result, null, 2));
+	await cli.parseAsync();
 };
 
 run().catch((error) => {

@@ -1,5 +1,5 @@
 const MAX_STRING_LENGTH = 30000; //max string length allowed before throwing err (strings that are too long in single cell cause errors in ms excel)
-const REFERENCE_SEPARATOR = ","; //used to seperate dataUrl for multiple references
+const REFERENCE_SEPARATOR = ","; //used to separate dataUrl for multiple references
 
 const ctdToHeader = (data) => {
     let row = [{
@@ -9,7 +9,7 @@ const ctdToHeader = (data) => {
     for (const field in data.schemaDefinition.allOf[1].properties) {
         let obj = {
             value: field,
-            fontWeight: `bold` // additionall cell properties for table headers here
+            fontWeight: `bold` // additionally cell properties for table headers here
         }
         row.push(obj);
     }
