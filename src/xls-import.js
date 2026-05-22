@@ -261,6 +261,8 @@ const importXlsx = async (options) => {
         });
     }
 
+    const errorsCount = Object.values(importResult)
+        .reduce((total, sheetResult) => total + sheetResult.sheetErrorsCount, 0);
 
     const hasErrors = Object.values(importResult).some((sheetResult) => sheetResult.sheetErrorsCount > 0);
 
@@ -271,6 +273,14 @@ const importXlsx = async (options) => {
             logger.info(`Content objects successfully imported: ${counters.coSuccessCount} out of ${coTotalCount}`);
         }
     }
+
+    if (hasErrors) {
+        logger.warn('Import from xlsx finished with errors');
+    }
+    logger.info(`Errors: ${errorsCount}`);
+    logger.info(`Objects total: ${coTotalCount}`);
+    logger.info(`Objects imported: ${counters.coSuccessCount}`);
+    logger.info(`Import from xlsx finished${resolvedOptions.filePath}`);
 
     return importResult;
 };
