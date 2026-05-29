@@ -1,8 +1,9 @@
 {
   "name": "flotiq-excel-migrator",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Migrator of of Flotiq data to and from MS Excel",
   "type": "module",
+  "main": "src/flotiq-xlsx-migrate.js",
   "private": false,
   "bin": {
     "flotiq-excel-migrator": "bin/flotiq-excel-migrator",
