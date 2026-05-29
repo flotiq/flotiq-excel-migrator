@@ -11,18 +11,22 @@ describe('CLI entrypoint', () => {
         const result = spawnSync(process.execPath, [cliPath, '--help'], {
             encoding: 'utf8'
         });
+        const output = `${result.stdout}${result.stderr}`;
 
         expect(result.status).toBe(0);
-        expect(result.stdout).toContain('Usage:');
-        expect(result.stdout).toContain('flotiq-excel-migrator <command> [options]');
+        expect(output).toContain('Usage:');
+        expect(output).toContain('flotiq-excel-migrator <command> [options]');
+        expect(output).toContain('export');
+        expect(output).toContain('import');
     });
 
     it('prints help when called without arguments', () => {
         const result = spawnSync(process.execPath, [cliPath], {
             encoding: 'utf8'
         });
+        const output = `${result.stdout}${result.stderr}`;
 
         expect(result.status).toBe(0);
-        expect(result.stdout).toContain('Usage:');
+        expect(output).toContain('Usage:');
     });
 });

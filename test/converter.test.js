@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } from '../converter.js';
+import { ctdToHeader, ctdFieldTypes, coToRecord, recordToCo } from '../src/converter.js';
 
 describe('converter', () => {
     it('creates a header row from the CTD schema definition', () => {

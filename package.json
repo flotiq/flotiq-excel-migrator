@@ -3,7 +3,6 @@
   "version": "1.0.17",
   "description": "Migrator of of Flotiq data to and from MS Excel",
   "type": "module",
-  "main": "flotiq-xlsx-migrate.js",
   "private": false,
   "bin": {
     "flotiq-excel-migrator": "bin/flotiq-excel-migrator",
@@ -28,9 +27,11 @@
   "author": "Flotiq team <hello@flotiq.com>",
   "license": "MIT",
   "dependencies": {
+    "@flotiq/api": "^1.0.0",
     "node-fetch": "2",
     "read-excel-file": "^9.0.9",
     "write-excel-file": "^1.4.13",
+    "yargs": "^18.0.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {
